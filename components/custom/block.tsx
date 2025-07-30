@@ -523,10 +523,6 @@ export function Block({
               />
             )}
 
-            {suggestions ? (
-              <div className="md:hidden h-dvh w-12 shrink-0" />
-            ) : null}
-
             <AnimatePresence>
               {isCurrentVersion && (
                 <Toolbar
