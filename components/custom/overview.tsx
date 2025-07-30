@@ -14,7 +14,7 @@ export const Overview = () => {
     >
       <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p className="flex flex-row justify-center gap-4 items-center">
-          <MessageIcon size={32} />
+          <MessageIcon />
         </p>
         <h1 className="text-3xl font-bold">
           Your AI Co-DeFiSeek for Smarter Crypto Management
