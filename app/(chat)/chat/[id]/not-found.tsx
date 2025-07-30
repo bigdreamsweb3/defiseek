@@ -21,9 +21,9 @@ export default function NotFound() {
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-foreground">Chat Not Found</h1>
         <p className="text-muted-foreground max-w-md">
-          This chat doesn't exist or you don't have permission to view it.
-          You'll be redirected to the home page shortly.
-        </p>
+  {`This chat doesn't exist or you don't have permission to view it. You'll be redirected to the home page shortly.`}
+</p>
+
         <div className="flex gap-2">
           <Button onClick={() => router.push('/')} variant="default">
             Go Home
