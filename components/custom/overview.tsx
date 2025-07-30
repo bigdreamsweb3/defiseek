@@ -17,14 +17,10 @@ export const Overview = () => {
           <MessageIcon />
         </p>
         <h1 className="text-3xl font-bold">
-          Your AI Co-DeFiSeek for Smarter Crypto Management
+          Your AI Copilot for Web3 safety
         </h1>
         <p>
-          DeFiSeek simplifies portfolio tracking and empowers 1inch users with
-          actionable insights, performance analytics, and personalized
-          strategies. Manage your DeFi assets effortlessly with a secure,
-          intuitive assistant designed to help you navigate the crypto universe
-          like a pro. 🚀
+
         </p>
       </div>
     </motion.div>

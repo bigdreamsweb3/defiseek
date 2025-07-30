@@ -36,7 +36,7 @@ DeFiSeek uses an intelligent agent system called **NeuralOps™** that enables A
 
 ## 🔧 Current Agent System
 
-### 1. **Base Framework** (`models/agents/base/ApiClient.ts`)
+### 1. **Base Framework** (`neural_ops/agents/base/ApiClient.ts`)
 
 The foundation provides:
 - **BaseAgent**: Abstract class all agents extend
@@ -46,13 +46,13 @@ The foundation provides:
 
 ### 2. **Existing Agents**
 
-#### **Supported Chains Agent** (`models/agents/bitcrunch/supportedChainsAgent.ts`)
+#### **Supported Chains Agent** (`neural_ops/agents/bitcrunch/supportedChainsAgent.ts`)
 - **Purpose**: Fetches supported blockchains from UnleashNFTs API
 - **Input**: None
 - **Output**: Array of supported blockchain networks
 - **Usage**: Validates if user's blockchain request is supported
 
-#### **Wallet Risk Agent** (`models/agents/bitcrunch/walletRiskAgent.ts`)
+#### **Wallet Risk Agent** (`neural_ops/agents/bitcrunch/walletRiskAgent.ts`)
 - **Purpose**: Analyzes wallet risk using bitsCrunch API
 - **Input**: Wallet address (string)
 - **Output**: Risk score, level, flags, and recommendations
@@ -90,7 +90,7 @@ tools: {
 
 ### Step 1: Define Your Agent
 
-Create a new file in `models/agents/[category]/[agentName].ts`:
+Create a new file in `neural_ops/agents/[category]/[agentName].ts`:
 
 ```typescript
 import { z } from 'zod';
@@ -128,7 +128,7 @@ export default myAgent;
 
 ### Step 2: Register Your Agent
 
-Add to `models/agents/index.ts`:
+Add to `neural_ops/agents/index.ts`:
 
 ```typescript
 // Import your agent
@@ -143,10 +143,10 @@ export { myAgent };
 
 ### Step 3: Create Utility Functions
 
-Add helper functions in `models/agents/utils/`:
+Add helper functions in `neural_ops/agents/utils/`:
 
 ```typescript
-// models/agents/utils/myAgentUtils.ts
+// neural_ops/agents/utils/myAgentUtils.ts
 import myAgent from '../category/myAgent';
 
 export async function analyzeWithMyAgent(input: string) {
@@ -257,7 +257,7 @@ async run(input: string): Promise<Output> {
 Let's create a complete example of a new agent that analyzes token prices:
 
 ```typescript
-// models/agents/defi/priceAnalysisAgent.ts
+// neural_ops/agents/defi/priceAnalysisAgent.ts
 import { z } from 'zod';
 import { ApiClient } from '../base/ApiClient';
 
@@ -449,7 +449,7 @@ const portfolioAnalysisAgent = ApiClient.define({
 ### 1. **Data Collection Strategy**
 
 ```typescript
-// models/agents/training/dataCollector.ts
+// neural_ops/agents/training/dataCollector.ts
 export class AgentDataCollector {
   private static interactions: Map<string, AgentInteraction[]> = new Map();
 
@@ -527,7 +527,7 @@ const monitoredAgent = ApiClient.define({
 ### 3. **A/B Testing Framework**
 
 ```typescript
-// models/agents/testing/abTesting.ts
+// neural_ops/agents/testing/abTesting.ts
 export class AgentABTesting {
   private static experiments: Map<string, ABExperiment> = new Map();
 
@@ -607,7 +607,7 @@ export async function recordAgentFeedback(
 ### 2. **Auto-Improvement System**
 
 ```typescript
-// models/agents/improvement/autoImprover.ts
+// neural_ops/agents/improvement/autoImprover.ts
 export class AgentAutoImprover {
   static async analyzePerformance(agentId: string) {
     const interactions = AgentDataCollector.getTrainingData(agentId);
@@ -653,7 +653,7 @@ export class AgentAutoImprover {
 ### 1. **Environment Configuration**
 
 ```typescript
-// models/agents/config/environment.ts
+// neural_ops/agents/config/environment.ts
 export const AgentConfig = {
   development: {
     enableMockData: true,
@@ -678,7 +678,7 @@ export function getAgentConfig() {
 ### 2. **Rate Limiting**
 
 ```typescript
-// models/agents/middleware/rateLimiter.ts
+// neural_ops/agents/middleware/rateLimiter.ts
 export class AgentRateLimiter {
   private static requests: Map<string, number[]> = new Map();
 
@@ -711,7 +711,7 @@ export class AgentRateLimiter {
 ### 3. **Health Monitoring**
 
 ```typescript
-// models/agents/monitoring/healthCheck.ts
+// neural_ops/agents/monitoring/healthCheck.ts
 export class AgentHealthMonitor {
   static async checkAllAgents(): Promise<HealthReport> {
     const agents = AgentRegistry.getAll();

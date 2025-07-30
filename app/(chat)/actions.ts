@@ -3,9 +3,10 @@
 import { CoreMessage, CoreUserMessage, generateText } from 'ai';
 import { cookies } from 'next/headers';
 
-import { customModel } from '@/models';
-import { DEFAULT_MODEL_NAME } from '@/models/models';
+
+import { DEFAULT_MODEL_NAME } from '@/neural_ops/models';
 import { getChatsByUserId } from '@/db/queries';
+import { customModel } from '@/neural_ops';
 
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();

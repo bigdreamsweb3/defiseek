@@ -1,9 +1,11 @@
-import { convertToCoreMessages, Message, StreamData, streamText } from 'ai';
-import { z } from 'zod';
+// file: app/(chat)/api/chat/route.ts
 
-import { customModel } from '@/models';
-import { models } from '@/models/models';
-import { systemPrompt } from '@/models/prompts';
+import { convertToCoreMessages, Message, StreamData, streamText } from 'ai';
+// import { z } from 'zod';
+
+import { customModel } from '@/neural_ops';
+import { models } from '@/neural_ops/models';
+import { systemPrompt } from '@/neural_ops/prompts';
 import { auth } from '@/app/(auth)/auth';
 import {
   deleteChatById,
@@ -16,14 +18,15 @@ import {
   getMostRecentUserMessageWithAttachments,
   sanitizeResponseMessages,
 } from '@/lib/utils';
-import {
-  getSupportedChains,
-  isChainSupported,
-  findChain,
-  tokenAnalysisAgent,
-} from '@/models/agents';
+// import {
+//   getSupportedChains,
+//   isChainSupported,
+//   findChain,
+// } from '@/neural_ops/agents';
 
 import { generateTitleFromUserMessage } from '../../actions';
+import { estimatePromptTokens } from '@/neural_ops/utils/tokenCount';
+import { tools } from '@/neural_ops/tools';
 
 const get = async (url: string, opts?: RequestInit) => {
   const res = await fetch(url, opts);
@@ -32,38 +35,9 @@ const get = async (url: string, opts?: RequestInit) => {
 
 export const maxDuration = 60;
 
-type AllowedTools =
-  | 'assetPrice'
-  | 'swapTokens'
-  | 'sendTokens'
-  | 'portfolioBalance'
-  | 'checkSupportedChains'
-  | 'validateChain';
+type AllowedTools = 'checkSupportedChains' | 'validateChain';
 
-const assetPriceTools: AllowedTools[] = [
-  'assetPrice',
-  'swapTokens',
-  'sendTokens',
-  'portfolioBalance',
-];
-
-const blockchainTools: AllowedTools[] = [
-  'checkSupportedChains',
-  'validateChain',
-];
-
-const allTools: AllowedTools[] = [...assetPriceTools, ...blockchainTools];
-
-interface TokenBalance {
-  address: string;
-  amount: number;
-  symbol?: string;
-  name?: string;
-  icon?: string;
-  price?: number;
-  value?: number;
-  chainId: string;
-}
+const allTools: AllowedTools[] = ['checkSupportedChains', 'validateChain'];
 
 export async function POST(request: Request) {
   console.log('🚀 API POST request received');
@@ -196,15 +170,19 @@ export async function POST(request: Request) {
       try {
         title = await generateTitleFromUserMessage({
           message: userMessage,
-          userId: session.user.id
+          userId: session.user.id,
         });
         console.log(`Generated title: "${title}" for chatId: ${chatId}`);
       } catch (error) {
-        console.warn('Failed to generate title, using fallback:', error instanceof Error ? error.message : String(error));
+        console.warn(
+          'Failed to generate title, using fallback:',
+          error instanceof Error ? error.message : String(error)
+        );
         // Use a simple fallback title based on the user's message
         const userContent = userMessage.content;
         if (typeof userContent === 'string' && userContent.length > 0) {
-          title = userContent.slice(0, 50) + (userContent.length > 50 ? '...' : '');
+          title =
+            userContent.slice(0, 50) + (userContent.length > 50 ? '...' : '');
         }
         console.log(`Using fallback title: "${title}" for chatId: ${chatId}`);
       }
@@ -310,7 +288,17 @@ export async function POST(request: Request) {
         2
       )
     );
+    const tokenCount = estimatePromptTokens(systemPrompt, messages);
+    console.log(`🔢 Total token count for system + messages: ${tokenCount}`);
+    // Append token count to the stream data for frontend use
+    // streamingData.appendMessageAnnotation({
+    //   tokenCount: tokenCount,
+    // });
 
+    // Ensure the model is valid and supports streaming
+    if (!model || !model.apiIdentifier) {
+      return new Response('Invalid model', { status: 400 });
+    }
     const result = await streamText({
       model: customModel(model.apiIdentifier),
       system: systemPrompt,
@@ -318,163 +306,7 @@ export async function POST(request: Request) {
       maxSteps: 1,
       experimental_activeTools: allTools,
       tools: {
-        assetPrice: {
-          description:
-            'Get current price of a given asset using its 3 or 4 letter ticker',
-          parameters: z.object({
-            asset: z.string(),
-          }),
-          execute: async ({ asset }) => {
-            // Dummy data for asset price
-            return 123.45;
-          },
-        },
-        swapTokens: {
-          description: 'Swap tokens using Uniswap',
-          parameters: z.object({
-            from: z.string(),
-            to: z.string(),
-            amount: z.string(),
-          }),
-          execute: async ({ from, to, amount }) => {
-            // Dummy data for swap
-            return { success: true, from, to, amount };
-          },
-        },
-        sendTokens: {
-          description: 'Send tokens to another address or ENS username',
-          parameters: z.object({
-            from: z.string(),
-            to: z.string(),
-            amount: z.string(),
-          }),
-          execute: async ({ from, to, amount }) => {
-            // Dummy data for send tokens
-            return { success: true, from, to, amount };
-          },
-        },
-        portfolioBalance: {
-          description:
-            'Get the portfolio/token balances of a given address or ENS username',
-          parameters: z.object({
-            address: z.string(),
-          }),
-          execute: async ({ address }) => {
-            // Dummy data for portfolio balance
-            return {
-              address: address,
-              values: [
-                {
-                  address: '0xDECAFBAD',
-                  amount: 10.5,
-                  symbol: 'ETH',
-                  name: 'Ethereum',
-                  icon: 'https://token.1inch.io/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png',
-                  price: 3000,
-                  value: 31500,
-                  chainId: '1',
-                },
-                {
-                  address: '0x...',
-                  amount: 5000,
-                  symbol: 'USDC',
-                  name: 'USD Coin',
-                  icon: 'https://token.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png',
-                  price: 1,
-                  value: 5000,
-                  chainId: '1',
-                },
-              ],
-            };
-          },
-        },
-        checkSupportedChains: {
-          description:
-            'Get a list of all supported blockchain networks for analysis',
-          parameters: z.object({}),
-          execute: async () => {
-            try {
-              const chains = await getSupportedChains();
-              return {
-                success: true,
-                supportedChains: chains,
-                count: chains.length,
-                message: `Found ${chains.length} supported blockchain networks`,
-              };
-            } catch (error) {
-              console.error('❌ Error in checkSupportedChains tool:', error);
-              return {
-                success: false,
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : 'Failed to fetch supported chains',
-                supportedChains: [],
-              };
-            }
-          },
-        },
-        validateChain: {
-          description:
-            'Check if a specific blockchain network is supported for analysis',
-          parameters: z.object({
-            chainIdentifier: z
-              .string()
-              .describe(
-                'Chain name, slug, or ID (e.g., "ethereum", "eth", "polygon")'
-              ),
-          }),
-          execute: async ({ chainIdentifier }) => {
-            try {
-              const isSupported = await isChainSupported(chainIdentifier);
-              const chainInfo = await findChain(chainIdentifier);
-
-              return {
-                chainIdentifier,
-                isSupported,
-                chainInfo,
-                message: isSupported
-                  ? `✅ ${chainInfo?.name || chainIdentifier} is supported`
-                  : `❌ ${chainIdentifier} is not supported`,
-              };
-            } catch (error) {
-              console.error(
-                `❌ Error validating chain ${chainIdentifier}:`,
-                error
-              );
-              return {
-                chainIdentifier,
-                isSupported: false,
-                error:
-                  error instanceof Error
-                    ? error.message
-                    : 'Failed to validate chain',
-                message: `❌ Could not validate ${chainIdentifier}`,
-              };
-            }
-          },
-        },
-        analyzeToken: {
-          description: 'Perform comprehensive DeFi token analysis including price, technical analysis, fundamentals, and risk assessment',
-          parameters: z.object({
-            tokenSymbol: z.string().describe('Token symbol (e.g., ETH, BTC, USDC)'),
-          }),
-          execute: async ({ tokenSymbol }) => {
-            try {
-              console.log(`🔍 Analyzing token: ${tokenSymbol}`);
-              const analysis = await tokenAnalysisAgent.execute(tokenSymbol);
-              console.log(`✅ Token analysis completed for ${tokenSymbol}`);
-              return analysis;
-            } catch (error) {
-              console.error(`❌ Token analysis failed for ${tokenSymbol}:`, error);
-              return {
-                error: error instanceof Error ? error.message : 'Unknown error',
-                message: `❌ Could not analyze token ${tokenSymbol}`,
-                suggestion: 'Please check the token symbol and try again',
-              };
-            }
-          },
-        },
+        ...tools,
       },
       onFinish: async ({ responseMessages }) => {
         try {

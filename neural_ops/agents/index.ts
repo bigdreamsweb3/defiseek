@@ -11,8 +11,8 @@ export { default as supportedChainsAgent } from './bitcrunch/supportedChainsAgen
 export type { Blockchain, SupportedChains } from './bitcrunch/supportedChainsAgent';
 
 // DeFi Analysis Agents
-export { default as tokenAnalysisAgent } from './defi/tokenAnalysisAgent';
-export type { TokenAnalysis } from './defi/tokenAnalysisAgent';
+// export { default as tokenAnalysisAgent } from './defi/tokenAnalysisAgent';
+// export type { TokenAnalysis } from './defi/tokenAnalysisAgent';
 
 // Utilities
 export {
@@ -27,14 +27,14 @@ export {
 // Register all agents
 import { AgentRegistry } from './base/ApiClient';
 import supportedChainsAgent from './bitcrunch/supportedChainsAgent';
-import tokenAnalysisAgent from './defi/tokenAnalysisAgent';
+// import tokenAnalysisAgent from './defi/tokenAnalysisAgent';
 
 // Auto-register agents when this module is imported (only once)
 let isInitialized = false;
 
 if (!isInitialized) {
   AgentRegistry.register(supportedChainsAgent);
-  AgentRegistry.register(tokenAnalysisAgent);
+  // AgentRegistry.register(tokenAnalysisAgent);
   isInitialized = true;
 
   if (process.env.NODE_ENV === 'development') {

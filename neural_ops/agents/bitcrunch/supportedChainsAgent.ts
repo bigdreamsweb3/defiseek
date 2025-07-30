@@ -29,7 +29,7 @@ export type SupportedChains = z.infer<typeof SupportedChainsSchema>;
  */
 const supportedChainsAgent = ApiClient.define({
   id: 'supportedChainsAgent',
-  description: 'Fetches and returns supported blockchains from UnleashNFTs bitsCrunch API',
+  description: 'Fetches and returns supported blockchains by and from UnleashNFTs bitsCrunch API',
   output: SupportedChainsSchema,
   
   async run(): Promise<SupportedChains> {

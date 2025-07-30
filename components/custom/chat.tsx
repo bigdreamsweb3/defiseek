@@ -59,10 +59,18 @@ export function Chat({
       ) as { chatId: string } | undefined;
 
       if (chatData?.chatId && pathname !== `/chat/${chatData.chatId}`) {
-        router.push(`/chat/${chatData.chatId}`, { scroll: false });
+        // Only navigate if we're starting a new chat from the home page
+        // Don't navigate if we're already in a chat or if the current chat ID matches
+        if (pathname === '/' && id !== chatData.chatId) {
+          // Use router.replace instead of router.push to avoid adding to history
+          // and use a small delay to ensure the response is visible first
+          setTimeout(() => {
+            router.replace(`/chat/${chatData.chatId}`, { scroll: false });
+          }, 100);
+        }
       }
     }
-  }, [streamingData, pathname, router]);
+  }, [streamingData, pathname, router, id]);
 
   const { width: windowWidth = 1920, height: windowHeight = 1080 } =
     useWindowSize();

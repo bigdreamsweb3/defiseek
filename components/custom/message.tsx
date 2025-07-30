@@ -13,8 +13,6 @@ import { SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { Skeleton } from '../ui/skeleton';
-import Portfolio from '@/components/portfolio';
-import CryptoPriceDisplay from "@/components/price";
 
 export const PreviewMessage = ({
   chatId,
@@ -66,37 +64,76 @@ export const PreviewMessage = ({
 
                   return (
                     <div key={toolCallId}>
-                      {toolName === 'assetPrice' ? (
-                        <CryptoPriceDisplay price={result} asset={args.asset} />
-                      ) : toolName === 'swapTokens' ? (
-                        <p>
-                          Swapped {args.amount} {args.from} for {result}{' '}
-                          {args.to}
-                        </p>
-                      ) : toolName === 'sendTokens' ? (
-                        <p>
-                          Sent {args.amount} {args.from} to {args.to}!
-                        </p>
-                      ) : toolName === 'portfolioBalance' ? (
-                        <Portfolio result={result} />
-                      ) : null}
-                      {/* <pre>{JSON.stringify(result, null, 2)}</pre> */}
+                      {toolName === 'checkSupportedChains' ? (
+                        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                            Supported Blockchain Networks
+                          </h4>
+                          {result.success ? (
+                            <div>
+                              <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                                {result.message}
+                              </p>
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {result.supportedChains?.map((chain: any, index: number) => (
+                                  <div key={index} className="text-xs bg-white dark:bg-gray-800 rounded px-2 py-1 border">
+                                    {chain.name || chain}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-red-600 dark:text-red-400">{result.error}</p>
+                          )}
+                        </div>
+                      ) : toolName === 'validateChain' ? (
+                        <div className={`border rounded-lg p-4 ${result.isSupported
+                          ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                          : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
+                          }`}>
+                          <h4 className={`font-semibold mb-2 ${result.isSupported
+                            ? 'text-green-900 dark:text-green-100'
+                            : 'text-red-900 dark:text-red-100'
+                            }`}>
+                            Chain Validation: {args.chainIdentifier}
+                          </h4>
+                          <p className={`text-sm ${result.isSupported
+                            ? 'text-green-700 dark:text-green-300'
+                            : 'text-red-700 dark:text-red-300'
+                            }`}>
+                            {result.message}
+                          </p>
+                          {result.chainInfo && (
+                            <div className="mt-2 text-xs">
+                              <strong>Chain Info:</strong> {JSON.stringify(result.chainInfo, null, 2)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto">
+                          {JSON.stringify(result, null, 2)}
+                        </pre>
+                      )}
                     </div>
                   );
                 } else {
                   return (
-                    <div
-                      key={toolCallId}
-                      className={cx({
-                        skeleton: ['assetPrice'].includes(toolName),
-                      })}
-                    >
-                      {toolName === 'assetPrice' ? (
-                        <div className="inline-flex items-center">
-                          <span>Price:</span>
-                          <Skeleton className="max-w-3 w-3 rounded-sm h-5" />
+                    <div key={toolCallId} className="animate-pulse">
+                      {toolName === 'checkSupportedChains' ? (
+                        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                          <Skeleton className="h-4 w-48 mb-2" />
+                          <Skeleton className="h-3 w-32" />
                         </div>
-                      ) : null}
+                      ) : toolName === 'validateChain' ? (
+                        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                          <Skeleton className="h-4 w-40 mb-2" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      ) : (
+                        <div className="bg-gray-100 dark:bg-gray-800 rounded p-2">
+                          <Skeleton className="h-3 w-32" />
+                        </div>
+                      )}
                     </div>
                   );
                 }
@@ -150,9 +187,11 @@ export const ThinkingMessage = () => {
           <SparklesIcon size={14} />
         </div>
 
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
-            Thinking...
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
           </div>
         </div>
       </div>

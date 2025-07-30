@@ -230,7 +230,7 @@ export function MultimodalInput({
             <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
             <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce" />
           </div>
-          <span>DeFiSeek is analyzing...</span>
+          {/* <span>DeFiSeek is analyzing...</span> */}
         </motion.div>
       )}
 

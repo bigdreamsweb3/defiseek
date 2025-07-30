@@ -61,9 +61,13 @@ export function MessageActions({
               variant="outline"
               onClick={async () => {
                 const messageId = getMessageIdFromAnnotations(message);
+                console.log('Upvoting message:', { chatId, messageId, originalMessageId: message.id });
 
                 const upvote = fetch('/api/vote', {
                   method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
                   body: JSON.stringify({
                     chatId,
                     messageId,
@@ -115,9 +119,13 @@ export function MessageActions({
               disabled={vote && !vote.isUpvoted}
               onClick={async () => {
                 const messageId = getMessageIdFromAnnotations(message);
+                console.log('Downvoting message:', { chatId, messageId, originalMessageId: message.id });
 
                 const downvote = fetch('/api/vote', {
                   method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
                   body: JSON.stringify({
                     chatId,
                     messageId,

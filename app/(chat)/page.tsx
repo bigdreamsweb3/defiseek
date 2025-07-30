@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import { DEFAULT_MODEL_NAME, models } from '@/models/models';
+import { DEFAULT_MODEL_NAME, models } from '@/neural_ops/models';
 import { Chat } from '@/components/custom/chat';
 import { generateUUID } from '@/lib/utils';
 

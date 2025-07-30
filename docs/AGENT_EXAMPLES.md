@@ -62,7 +62,7 @@ The AI will use the `analyzeToken` tool and return structured data like:
 ### Example 1: Simple Price Alert Agent
 
 ```typescript
-// models/agents/alerts/priceAlertAgent.ts
+// neural_ops/agents/alerts/priceAlertAgent.ts
 import { z } from 'zod';
 import { createSimpleAgent } from '../utils/agentHelpers';
 
@@ -102,7 +102,7 @@ export default priceAlertAgent;
 ### Example 2: Portfolio Diversification Agent
 
 ```typescript
-// models/agents/portfolio/diversificationAgent.ts
+// neural_ops/agents/portfolio/diversificationAgent.ts
 import { z } from 'zod';
 import { ApiClient } from '../base/ApiClient';
 
@@ -201,7 +201,7 @@ export default diversificationAgent;
 ### Example 3: Gas Fee Optimization Agent
 
 ```typescript
-// models/agents/ethereum/gasFeeAgent.ts
+// neural_ops/agents/ethereum/gasFeeAgent.ts
 import { z } from 'zod';
 import { createSimpleAgent } from '../utils/agentHelpers';
 
@@ -255,7 +255,7 @@ export default gasFeeAgent;
 ### 1. **Register Multiple Agents**
 
 ```typescript
-// models/agents/index.ts
+// neural_ops/agents/index.ts
 import priceAlertAgent from './alerts/priceAlertAgent';
 import diversificationAgent from './portfolio/diversificationAgent';
 import gasFeeAgent from './ethereum/gasFeeAgent';
@@ -312,7 +312,7 @@ tools: {
 ### 3. **Batch Agent Execution**
 
 ```typescript
-import { executeAgentsBatch } from '@/models/agents/utils/agentHelpers';
+import { executeAgentsBatch } from '@/neural_ops/agents/utils/agentHelpers';
 
 // Execute multiple agents for comprehensive analysis
 const comprehensiveAnalysis = await executeAgentsBatch([
@@ -329,7 +329,7 @@ console.log('Comprehensive analysis results:', comprehensiveAnalysis);
 ### 1. **Performance Monitoring**
 
 ```typescript
-import { AgentPerformanceMonitor } from '@/models/agents/utils/agentHelpers';
+import { AgentPerformanceMonitor } from '@/neural_ops/agents/utils/agentHelpers';
 
 // Get performance metrics for an agent
 const metrics = AgentPerformanceMonitor.getMetrics('tokenAnalysisAgent');
@@ -342,7 +342,7 @@ const allMetrics = AgentPerformanceMonitor.getAllMetrics();
 ### 2. **Health Checks**
 
 ```typescript
-import { AgentRegistryHelpers } from '@/models/agents/utils/agentHelpers';
+import { AgentRegistryHelpers } from '@/neural_ops/agents/utils/agentHelpers';
 
 // Check if agent exists
 const hasAgent = AgentRegistryHelpers.hasAgent('tokenAnalysisAgent');
@@ -357,7 +357,7 @@ const agentList = AgentRegistryHelpers.getAgentList();
 
 ```typescript
 // tests/agents/tokenAnalysisAgent.test.ts
-import tokenAnalysisAgent from '@/models/agents/defi/tokenAnalysisAgent';
+import tokenAnalysisAgent from '@/neural_ops/agents/defi/tokenAnalysisAgent';
 
 describe('Token Analysis Agent', () => {
   it('should analyze ETH successfully', async () => {
