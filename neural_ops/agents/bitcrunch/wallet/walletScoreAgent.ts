@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { ApiClient } from '../../base/ApiClient';
-import unleashnfts from '../../../../.api/apis/unleashnfts';
+// import unleashnfts from '../../../../.api/apis/unleashnfts';
 
 // ✅ Full schema based on actual response structure
 const WalletScoreSchema = z.object({
