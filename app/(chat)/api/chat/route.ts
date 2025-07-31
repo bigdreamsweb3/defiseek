@@ -35,9 +35,15 @@ const get = async (url: string, opts?: RequestInit) => {
 
 export const maxDuration = 60;
 
-type AllowedTools = 'checkSupportedChains' | 'validateChain';
-
-const allTools: AllowedTools[] = ['checkSupportedChains', 'validateChain'];
+type AllowedTools =
+  | 'checkSupportedChains'
+  | 'validateChain'
+  | 'checkWalletScore';
+const allTools: AllowedTools[] = [
+  'checkSupportedChains',
+  'validateChain',
+  'checkWalletScore',
+];
 
 export async function POST(request: Request) {
   console.log('🚀 API POST request received');

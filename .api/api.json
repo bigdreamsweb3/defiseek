@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "unleashnfts",
+      "source": "@unleashnfts/v1.0#6ycrrg1cmdh80mlm",
+      "integrity": "sha512-BJB2haQtYtxKRDHhkkXWu/M34L3od5UUnJfVIq+3lxIrilffjgoxMdl5smH8R7r7eZF65kI2GsXClS5SDlhvhw==",
+      "installerVersion": "6.1.3"
+    }
+  ]
+}

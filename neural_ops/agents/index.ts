@@ -27,6 +27,7 @@ export {
 // Register all agents
 import { AgentRegistry } from './base/ApiClient';
 import supportedChainsAgent from './bitcrunch/supportedChainsAgent';
+import walletScoreAgent from './bitcrunch/wallet/walletScoreAgent';
 // import tokenAnalysisAgent from './defi/tokenAnalysisAgent';
 
 // Auto-register agents when this module is imported (only once)
@@ -34,6 +35,8 @@ let isInitialized = false;
 
 if (!isInitialized) {
   AgentRegistry.register(supportedChainsAgent);
+  AgentRegistry.register(walletScoreAgent);
+// Uncomment when token analysis agent is ready
   // AgentRegistry.register(tokenAnalysisAgent);
   isInitialized = true;
 
