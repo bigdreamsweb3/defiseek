@@ -249,22 +249,9 @@ export async function POST(request: Request) {
 
     console.log('✅ Returning stream response');
     
-    // 🔥 KEY FIX: Transform the response to filter out tool calls from the UI
+    // Return normal stream response - we'll filter in frontend
     return result.toDataStreamResponse({
       data: streamingData,
-      // This is the proper way to filter streaming data
-      transform: (chunk: any) => {
-        // Allow text chunks and finish chunks to go through
-        if (chunk.type === 'text-delta' || chunk.type === 'finish') {
-          return chunk;
-        }
-        // Filter out tool-call and tool-result chunks from the UI
-        if (chunk.type === 'tool-call' || chunk.type === 'tool-result') {
-          return null; // Don't send to frontend
-        }
-        // Allow other chunks to pass through
-        return chunk;
-      }
     });
   } catch (error) {
     console.error('❌ Error in streamText execution:', error);
@@ -317,4 +304,4 @@ export async function DELETE(request: Request) {
       status: 500,
     });
   }
-      }
+    }
