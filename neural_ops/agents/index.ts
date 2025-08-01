@@ -41,7 +41,7 @@ import { AgentRegistry } from './base/ApiClient';
 import supportedChainsAgent from './bitcrunch/supportedChainsAgent';
 import walletScoreAgent from './bitcrunch/wallet/walletScoreAgent';
 import nftMarketAnalyticsAgent from './bitcrunch/nft/market-insights/analyticsAgent';
-import marketAnalyticsAgent from './bitcrunch/nft/marketAnalyticsAgent';
+// import marketAnalyticsAgent from './bitcrunch/nft/marketAnalyticsAgent';
 // import tokenAnalysisAgent from './defi/tokenAnalysisAgent';
 
 // Auto-register agents when this module is imported (only once)
@@ -50,8 +50,8 @@ let isInitialized = false;
 if (!isInitialized) {
   AgentRegistry.register(supportedChainsAgent);
   AgentRegistry.register(walletScoreAgent);
-  // AgentRegistry.register(nftMarketAnalyticsAgent);
-  AgentRegistry.register(marketAnalyticsAgent);
+  AgentRegistry.register(nftMarketAnalyticsAgent);
+  // AgentRegistry.register(marketAnalyticsAgent);
   // Uncomment when token analysis agent is ready
   // AgentRegistry.register(tokenAnalysisAgent);
   isInitialized = true;
