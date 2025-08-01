@@ -54,9 +54,9 @@ export const PreviewMessage = ({
           )}
 
           {Array.isArray(message.toolInvocations) && message.toolInvocations.length > 0 && (
-
             <div className="flex flex-col gap-4">
-              {message.toolInvocations.map(({ toolName, toolCallId, state, args, result }) => {
+              {message.toolInvocations.map((tool) => {
+                const { toolName, toolCallId, state, args, result } = tool as any;
                 if (state !== 'result') {
                   return (
                     <div key={toolCallId} className="animate-pulse bg-gray-900/10 dark:bg-gray-50/10 p-4 rounded">
@@ -110,12 +110,12 @@ export const PreviewMessage = ({
                         </h4>
                         {result.success ? (
                           <div className="space-y-2 text-sm">
-                            <p>📊 Score: {result.data?.walletScore} — {result.data?.classification}</p>
+                            <p>📊 Score: <strong>{result.data?.walletScore}</strong> — {result.data?.classification}</p>
                             <div className="grid grid-cols-2 gap-2 text-xs">
-                              <div>Suspicious: {result.data?.riskScores?.anomalousPatternScore}</div>
-                              <div>Token Score: {result.data?.riskScores?.associatedTokenScore}</div>
-                              <div>Exposure: {result.data?.riskScores?.riskInteractionScore}</div>
-                              <div>Age: {result.data?.riskScores?.walletAgeScore}</div>
+                              <div>Anomalous Pattern Score: {result.data?.riskScores?.anomalousPatternScore}</div>
+                              <div>Associated Token Score: {result.data?.riskScores?.associatedTokenScore}</div>
+                              <div>Risk Interaction Score: {result.data?.riskScores?.riskInteractionScore}</div>
+                              <div>Wallet Age Score: {result.data?.riskScores?.walletAgeScore}</div>
                             </div>
                             {result.data?.illicitFlags && (
                               <p className="text-xs bg-red-900 text-red-300 px-2 py-1 rounded inline-block">
@@ -204,4 +204,3 @@ export const ThinkingMessage = () => {
     </motion.div>
   );
 };
-                                             
