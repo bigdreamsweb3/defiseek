@@ -15,12 +15,7 @@ const extractAddress = (input: string): string => {
 };
 
 export const checkWalletScore = {
-  description: `Retrieve a comprehensive overview of a wallet's activity and risk assessment, including key metrics such as interaction patterns,
-classification, and risk scores.
-
-The response provides wallet address, blockchain details, chain ID, and classification type, ensuring clarity on the wallet's status within the network.
-For each wallet address, the response includes anomalous pattern score, associated token score, risk interaction score, and wallet age score, enabling insight into the wallet's behavior and reliability.
-It also lists interaction scores related to smart contracts, staking, governance, and centralized platforms, providing a complete evaluation of the wallet's overall activity and potential risks.`,
+  description: `Retrieve a comprehensive overview of a wallet's activity and risk assessment, including metrics like interaction patterns, classification, and risk scores.`,
 
   parameters: z.object({
     address: z.string().describe('The wallet address you want to analyze.'),
@@ -28,22 +23,27 @@ It also lists interaction scores related to smart contracts, staking, governance
 
   execute: async ({ address }: { address: string }) => {
     try {
-      const cleanAddress = extractAddress(address); // 👈 Ensure it's only one address
+      const cleanAddress = extractAddress(address);
       const result = await walletScoreAgent.execute(cleanAddress);
+
       return {
         success: true,
         result,
-        message: `Wallet score found for ${cleanAddress}`,
+        message: `Wallet score retrieved for ${cleanAddress}`,
       };
     } catch (error) {
       console.error('❌ Error in checkWalletScore tool:', error);
       return {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to fetch wallet score',
+        walletAddress: address,
+        error: `Failed to fetch wallet score for ${address}`,
+        explanation: `I couldn't retrieve a verified score for this wallet. This does **not** mean the wallet is malicious — but it may be new, inactive, or private. I recommend checking its history manually on public explorers like Etherscan, BaseScan, or DeBank.`,
+        flags: ['No score data available from safety systems'],
       };
     }
   },
 };
+
+// ✅ Add this after the export
+export type CheckWalletScoreOutput = Awaited<ReturnType<typeof checkWalletScore['execute']>>;
+  
