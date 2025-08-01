@@ -133,47 +133,74 @@ export const PreviewMessage = ({
                         </div>
                         {result.success ? (
                           <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-  <span className="text-sm text-muted-foreground">Score:</span>
-  <span className="font-semibold text-foreground">{result.data?.walletScore}/100</span>
-  <span className="text-sm text-muted-foreground">—</span>
-  <span
-    className={cx(
-      "text-sm font-medium",
-      result.data?.walletScore < 30
-        ? "text-red-600"
-        : result.data?.walletScore < 50
-        ? "text-orange-500"
-        : "text-green-600"
-    )}
-  >
-    {result.data?.classification}
-  </span>
+  <div className="flex items-center gap-2">
+    <span className="text-sm text-muted-foreground">Score:</span>
+    <span className="font-semibold text-foreground">
+      {result.data?.walletScore?.toFixed(1)}/100
+    </span>
+    <span className="text-sm text-muted-foreground">—</span>
+    <span
+      className={cx(
+        "text-sm font-medium",
+        result.data?.walletScore < 30
+          ? "text-red-600"
+          : result.data?.walletScore < 50
+          ? "text-orange-500"
+          : "text-green-600"
+      )}
+    >
+      {result.data?.classification}
+    </span>
+    <span className="text-xs text-muted-foreground">({result.data?.classification_type})</span>
+  </div>
+
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+    <div className="bg-muted rounded-md p-2">
+      <div className="text-muted-foreground mb-1">Wallet Age</div>
+      <div className="font-medium">{result.data?.wallet_age_score}/10</div>
+    </div>
+
+    <div className="bg-muted rounded-md p-2">
+      <div className="text-muted-foreground mb-1">Risk Interaction</div>
+      <div className="font-medium">{result.data?.risk_interaction_score}</div>
+    </div>
+
+    <div className="bg-muted rounded-md p-2">
+      <div className="text-muted-foreground mb-1">Frequency Score</div>
+      <div className="font-medium">{result.data?.frequency_score}</div>
+    </div>
+
+    <div className="bg-muted rounded-md p-2">
+      <div className="text-muted-foreground mb-1">Centralized Interactions</div>
+      <div className="font-medium">{result.data?.centralized_interaction_score}</div>
+    </div>
+
+    <div className="bg-muted rounded-md p-2">
+      <div className="text-muted-foreground mb-1">Smart Contract Score</div>
+      <div className="font-medium">{result.data?.smart_contract_interaction_score}</div>
+    </div>
+
+    <div className="bg-muted rounded-md p-2">
+      <div className="text-muted-foreground mb-1">Volume Score</div>
+      <div className="font-medium">{Number(result.data?.volume_score).toFixed(5)}</div>
+    </div>
+  </div>
+
+  {result.data?.blockchain_without_illicit && (
+    <div className="text-xs text-muted-foreground mt-2">
+      <span className="font-medium text-foreground">Clean Chains:</span>{" "}
+      {result.data?.blockchain_without_illicit}
+    </div>
+  )}
+
+  {result.data?.illicit && (
+    <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-2">
+      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+      <span className="text-xs text-red-700 dark:text-red-300">Illicit activity detected</span>
+    </div>
+  )}
 </div>
 
-                            <div className="grid grid-cols-2 gap-3 text-xs">
-                              
-                              
-                              <div className="bg-muted rounded-md p-2">
-                                <div className="text-muted-foreground mb-1">Risk Interaction</div>
-                                <div className="font-medium">{result.data?.riskScores?.riskInteractionScore}</div>
-                              </div>
-
-                              <div className="bg-muted rounded-md p-2">
-                                <div className="text-muted-foreground mb-1">Age Score</div>
-                                <div className="font-medium">{result.data?.riskScore?.walletAgeScore}/10</div>
-                              </div>
-
-                              
-                              
-                            </div>
-                            {result.data?.illicitFlags && (
-                              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-2">
-                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                <span className="text-xs text-red-700 dark:text-red-300">Illicit flags detected</span>
-                              </div>
-                            )}
-                          </div>
                         ) : (
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
