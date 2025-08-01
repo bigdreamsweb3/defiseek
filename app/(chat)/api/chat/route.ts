@@ -29,12 +29,12 @@ type AllowedTools =
   | 'checkSupportedChains'
   | 'validateChain'
   | 'checkWalletScore'
-  | 'analyzeNFTMarketInsights';
+  | '';
 const allTools: AllowedTools[] = [
   'checkSupportedChains',
   'validateChain',
   'checkWalletScore',
-  'analyzeNFTMarketInsights',
+  '',
 ];
 
 export async function POST(request: Request) {
