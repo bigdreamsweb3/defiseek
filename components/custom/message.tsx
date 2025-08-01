@@ -142,7 +142,7 @@ export const PreviewMessage = ({
       "text-sm font-medium",
       result.data?.walletScore < 30
         ? "text-red-600"
-        : result.data?.walletScore < 60
+        : result.data?.walletScore < 50
         ? "text-orange-500"
         : "text-green-600"
     )}
@@ -152,18 +152,20 @@ export const PreviewMessage = ({
 </div>
 
                             <div className="grid grid-cols-2 gap-3 text-xs">
-                              <div className="bg-muted rounded-md p-2">
-                                <div className="text-muted-foreground mb-1">Anomalous Pattern</div>
-                                <div className="font-medium">{result.data?.riskScores?.anomalousPatternScore}</div>
-                              </div>
-                              <div className="bg-muted rounded-md p-2">
-                                <div className="text-muted-foreground mb-1">Associated Token</div>
-                                <div className="font-medium">{result.data?.riskScores?.associatedTokenScore}</div>
-                              </div>
+                              
+                              
                               <div className="bg-muted rounded-md p-2">
                                 <div className="text-muted-foreground mb-1">Risk Interaction</div>
                                 <div className="font-medium">{result.data?.riskScores?.riskInteractionScore}</div>
                               </div>
+
+                              <div className="bg-muted rounded-md p-2">
+                                <div className="text-muted-foreground mb-1">Anomalous Pattern</div>
+                                <div className="font-medium">{result.data?.riskScore?. walletAgeScore}</div>
+                              </div>
+
+                              
+                              
                             </div>
                             {result.data?.illicitFlags && (
                               <div className="flex items-center gap-2 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-2">
