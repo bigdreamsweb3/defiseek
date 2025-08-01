@@ -1,16 +1,11 @@
-// File: neural_ops/agents/bitcrunch/wallet/walletScoreAgent.ts
-
 import { z } from 'zod';
 import { ApiClient } from '../../base/ApiClient';
-// import unleashnfts from '../../../../.api/apis/unleashnfts';
 
-// ✅ Full schema based on actual response structure
 const WalletScoreSchema = z.object({
   wallet_address: z.string(),
-  blockchain: z.string(),
-  chain_id: z.number(),
   classification: z.string(),
   classification_type: z.string(),
+
   anomalous_pattern_score: z.number(),
   associated_token_score: z.number(),
   risk_interaction_score: z.number(),
@@ -21,7 +16,10 @@ const WalletScoreSchema = z.object({
   wallet_score: z.number(),
   volume_score: z.number(),
   frequency_score: z.number(),
-  illicit: z.string(), // ⚠️ Change this to `z.array(z.unknown())` if it’s an array
+
+  illicit: z.union([z.string(), z.array(z.unknown())]).optional(),
+  blockchain_with_illicit: z.string().optional(),
+  blockchain_without_illicit: z.string().optional(),
 });
 
 export type WalletScore = z.infer<typeof WalletScoreSchema>;
@@ -41,39 +39,39 @@ export const walletScoreAgent = ApiClient.define({
     if (!apiKey) {
       throw new Error('⚠️ UNLEASHNFTS_API_KEY not found in environment variables.');
     }
-    
-    console.log(`✅ Received wallet address: ${address}`);
 
-    console.log(`🔍 Fetching wallet score for address: ${address}...`);
-    
+    const url = `https://api.unleashnfts.com/api/v2/wallet/score?wallet_address=${address}&time_range=all&offset=0&limit=100`;
+
+    const headers: HeadersInit = {
+      accept: 'application/json',
+      'x-api-key': apiKey,
+      'Content-Type': 'application/json',
+    };
+
+    console.log(`🌐 Fetching wallet score from: ${url}`);
+    console.log(`🔑 Using API key: ${apiKey.slice(0, 6)}...`);
+
     try {
-      
-      const url = `https://api.unleashnfts.com/api/v2/wallet/score?wallet_address=${address}&time_range=all&offset=0&limit=100`;
+      const response = await fetch(url, { method: 'GET', headers });
 
-      const headers: HeadersInit = {
-        'accept': 'application/json',
-        'x-api-key': apiKey,
-        'Content-Type': 'application/json',
-      };
-
-      console.log(`🌐 Making API call to: ${url}`);
-      console.log(`🔑 Using API key: ${apiKey.substring(0, 8)}...`);
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers,
-      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`❌ API error: ${response.status} – ${errText}`);
+      }
 
       const data = await response.json();
       const walletScore = data?.data?.[0];
+
       if (!walletScore) {
-        throw new Error(`No wallet score found for ${address}`);
+        throw new Error(`⚠️ No wallet score found for address: ${address}`);
       }
+
+      console.log('🧾 Raw wallet score response:', walletScore);
 
       return WalletScoreSchema.parse(walletScore);
     } catch (error) {
-      console.error('❌ Error fetching wallet score:', error);
-      throw new Error(`Failed to fetch wallet score for ${address}`);
+      console.error('❌ Error in walletScoreAgent:', error);
+      throw new Error(`walletScoreAgent failed for address: ${address}`);
     }
   },
 });
