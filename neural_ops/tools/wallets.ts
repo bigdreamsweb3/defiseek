@@ -26,24 +26,43 @@ export const checkWalletScore = {
       const cleanAddress = extractAddress(address);
       const result = await walletScoreAgent.execute(cleanAddress);
 
+      // ✅ Success case - return structured data for AI to process
       return {
         success: true,
-        result,
-        message: `Wallet score retrieved for ${cleanAddress}`,
+        walletAddress: cleanAddress,
+        data: {
+          classification: result.classification,
+          classificationLevel: result.classification_type,
+          walletScore: result.wallet_score,
+          riskScores: {
+            anomalousPattern: result.anomalous_pattern_score,
+            associatedToken: result.associated_token_score,
+            riskInteraction: result.risk_interaction_score,
+            walletAge: result.wallet_age_score,
+            smartContractInteraction: result.smart_contract_interaction_score,
+            stakingGovernance: result.staking_governance_interaction_score,
+            centralizedInteraction: result.centralized_interaction_score,
+            volume: result.volume_score,
+            frequency: result.frequency_score
+          },
+          blockchain: result.blockchain,
+          chainId: result.chain_id,
+          illicitFlags: result.illicit
+        }
       };
     } catch (error) {
       console.error('❌ Error in checkWalletScore tool:', error);
+      
+      // ✅ Failure case - return simple error info for AI to interpret
       return {
         success: false,
         walletAddress: address,
-        error: `Failed to fetch wallet score for ${address}`,
-        explanation: `I couldn't retrieve a verified score for this wallet. This does **not** mean the wallet is malicious — but it may be new, inactive, or private. I recommend checking its history manually on public explorers like Etherscan, BaseScan, or DeBank.`,
-        flags: ['No score data available from safety systems'],
+        errorType: 'data_unavailable',
+        message: 'Could not retrieve wallet safety score',
+        // Remove the detailed explanation and flags - let the AI handle this
       };
     }
   },
 };
 
-// ✅ Add this after the export
 export type CheckWalletScoreOutput = Awaited<ReturnType<typeof checkWalletScore['execute']>>;
-  
