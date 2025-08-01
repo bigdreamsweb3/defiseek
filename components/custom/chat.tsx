@@ -255,16 +255,7 @@ export function Chat({
         .hover-cyan:hover {
           border-color: rgba(0, 255, 255, 0.4);
           box-shadow: var(--defiseek-glow);
-        }
-        
-        /* Focus states */
-        input:focus,
-        textarea:focus,
-        button:focus {
-          outline: none;
-          border-color: var(--defiseek-cyan) !important;
-          box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2) !important;
-        }
+      }
         
         /* Scrollbar styling */
         ::-webkit-scrollbar {
