@@ -1,8 +1,8 @@
-// neural_ops/tools/index.ts
+// File: neural_ops/tools/index.ts
 
 import { checkSupportedChains, validateChain } from './chains';
 import { checkWalletScore } from './wallets';
-import { analyzeNFTMarketInsights } from './nfts'; // ✅ Import the NFT tool
+import { nftMarketAnalyticsTool } from './nft/marketAnalytics'; // 👈 import the new tool
 
 export const tools = {
   // chain tools
@@ -13,7 +13,7 @@ export const tools = {
   checkWalletScore,
 
   // NFT tools
-  analyzeNFTMarketInsights, // ✅ Add NFT analytics tool here
+  nftMarketAnalyticsTool, // 👈 export it here
 
   // add more tools as needed
 };
