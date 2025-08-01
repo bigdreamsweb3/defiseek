@@ -100,17 +100,17 @@ export function Chat({
   return (
     <>
       {/* Main Chat Container with DeFiSeek branding */}
-      <div className="flex flex-col h-dvh bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+      <div className="flex flex-col h-dvh bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 overflow-hidden">
         
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+        <div className="flex-shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
           <ChatHeader selectedModelId={selectedModelId} />
         </div>
 
         {/* Messages Container */}
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto scroll-smooth"
+          className="flex-1 overflow-y-auto scroll-smooth chat-scrollbar min-h-0"
         >
           <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
             {messages.length === 0 && (
@@ -160,8 +160,8 @@ export function Chat({
         </div>
 
         {/* Input Form */}
-        <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-700">
-          <div className="max-w-4xl mx-auto p-4">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 safe-area-bottom">
+          <div className="max-w-4xl mx-auto p-4 pb-safe">
             <form className="w-full">
               <MultimodalInput
                 chatId={id}
@@ -222,7 +222,7 @@ export function Chat({
           overflow-wrap: break-word;
         }
         
-        /* Mobile-specific improvements */
+        /* Mobile keyboard handling */
         @media (max-width: 768px) {
           .message-content {
             font-size: 14px;
@@ -234,6 +234,21 @@ export function Chat({
             max-width: 100%;
             overflow-wrap: break-word;
             word-break: break-word;
+          }
+          
+          /* Safe area for mobile devices */
+          .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+          }
+          
+          .pb-safe {
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+          }
+          
+          /* Ensure proper viewport height handling on mobile */
+          .h-dvh {
+            height: 100dvh;
+            height: 100vh;
           }
         }
         
@@ -274,4 +289,4 @@ export function Chat({
       `}</style>
     </>
   );
-    }
+                    }
