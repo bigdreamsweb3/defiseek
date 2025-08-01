@@ -37,27 +37,27 @@ export const walletScoreAgent = ApiClient.define({
     if (!address) {
       throw new Error('⚠️ No wallet address provided to walletScoreAgent.');
     }
+
+    if (!apiKey) {
+      throw new Error('⚠️ UNLEASHNFTS_API_KEY not found in environment variables.');
+    }
+    
     console.log(`✅ Received wallet address: ${address}`);
 
     console.log(`🔍 Fetching wallet score for address: ${address}...`);
-
-    // 🛡️ Authorize API client
-    // unleashnfts.auth(apiKey);
-
+    
     try {
-      //   const response = await unleashnfts.getWalletScore({
-      //     wallet_address: [address],
-      //     time_range: 'all',
-      //     offset: 0,
-      //     limit: 30,
-      //   });
-
-      const url = `https://api.unleashnfts.com/api/v2/wallet/score?wallet_address=${address}&time_range=all&offset=0&limit=30`;
+      
+      const url = `https://api.unleashnfts.com/api/v2/wallet/score?wallet_address=${address}&time_range=all&offset=0&limit=100`;
 
       const headers: HeadersInit = {
-        accept: 'application/json',
-        ...(apiKey ? { 'x-api-key': apiKey } : {}),
+        'accept': 'application/json',
+        'x-api-key': apiKey,
+        'Content-Type': 'application/json',
       };
+
+      console.log(`🌐 Making API call to: ${url}`);
+      console.log(`🔑 Using API key: ${apiKey.substring(0, 8)}...`);
 
       const response = await fetch(url, {
         method: 'GET',
