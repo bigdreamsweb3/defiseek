@@ -181,7 +181,7 @@ export const PreviewMessage = ({
     <div className="bg-muted rounded-md p-2">
       <div className="text-muted-foreground mb-1">
   CEX Interactions
-        {* <Tooltip>Interaction score with centralized exchanges</Tooltip> *}
+        {/* <Tooltip>Interaction score with centralized exchanges</Tooltip> */}
 </div>
 
       <div className="font-medium">
