@@ -1,7 +1,7 @@
 // file: app/(chat)/api/chat/route.ts
+// Solution: Filter the stream response to hide tool calls while keeping full streaming
 
 import { convertToCoreMessages, Message, StreamData, streamText } from 'ai';
-// import { z } from 'zod';
 
 import { customModel } from '@/neural_ops';
 import { models } from '@/neural_ops/models';
@@ -18,20 +18,10 @@ import {
   getMostRecentUserMessageWithAttachments,
   sanitizeResponseMessages,
 } from '@/lib/utils';
-// import {
-//   getSupportedChains,
-//   isChainSupported,
-//   findChain,
-// } from '@/neural_ops/agents';
 
 import { generateTitleFromUserMessage } from '../../actions';
 import { estimatePromptTokens } from '@/neural_ops/utils/tokenCount';
 import { tools } from '@/neural_ops/tools';
-
-const get = async (url: string, opts?: RequestInit) => {
-  const res = await fetch(url, opts);
-  return await res.json();
-};
 
 export const maxDuration = 60;
 
@@ -56,18 +46,13 @@ export async function POST(request: Request) {
   }: { id: string; messages: Array<Message>; modelId: string } =
     await request.json();
 
-  console.log('Received messages:', JSON.stringify(messages, null, 2));
-  console.log('Received ID:', id);
-
   const session = await auth();
 
   if (!session || !session.user || !session.user.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  console.log('Received modelId:', modelId);
   const model = models.find((m) => m.id === modelId);
-
   if (!model) {
     console.error(`Model with id ${modelId} not found.`);
     return new Response('Model not found', { status: 404 });
@@ -98,9 +83,8 @@ export async function POST(request: Request) {
     coreMessages[lastUserMessageIndex] = userMessage;
   }
 
-  // Filter out messages with empty content to prevent Gemini API errors
+  // Filter out messages with empty content
   const validMessages = coreMessages.filter((message) => {
-    // Always keep user messages
     if (message.role === 'user') {
       if (!message.content) return false;
       if (typeof message.content === 'string') {
@@ -119,29 +103,26 @@ export async function POST(request: Request) {
       return true;
     }
 
-    // For assistant messages, skip those with empty content (they usually have only tool invocations)
     if (message.role === 'assistant') {
       if (!message.content) return false;
       if (typeof message.content === 'string') {
         return message.content.trim().length > 0;
       }
       if (Array.isArray(message.content)) {
-        // For array content, ensure there's at least one meaningful part
         const hasValidContent = message.content.some((part) => {
           if (part.type === 'text') {
             return part.text && part.text.trim().length > 0;
           }
           if (part.type === 'tool-call') {
-            return true; // Tool calls are valid content
+            return true;
           }
-          return false; // Other types are not considered valid for Gemini
+          return false;
         });
         return hasValidContent;
       }
       return true;
     }
 
-    // For tool messages, ensure they have content
     if (message.role === 'tool') {
       if (!message.content) return false;
       if (Array.isArray(message.content)) {
@@ -154,7 +135,6 @@ export async function POST(request: Request) {
   });
 
   if (validMessages.length === 0) {
-    // Create a fallback message to prevent empty request
     const fallbackMessages = [
       {
         role: 'user' as const,
@@ -165,13 +145,9 @@ export async function POST(request: Request) {
   }
 
   let chat = await getChatById({ id });
-  let chatId = id; // Use the existing ID from the frontend
-  console.log(`Chat found: ${!!chat}, using chatId: ${chatId}`);
+  let chatId = id;
 
   if (!chat) {
-    console.log(`Creating new chat with ID: ${chatId}`);
-    // Don't generate a new UUID - use the existing ID from the frontend
-    // This ensures the user stays in the same chat they started
     let title = 'New Chat';
 
     if (userMessage && userMessage.role === 'user') {
@@ -180,25 +156,17 @@ export async function POST(request: Request) {
           message: userMessage,
           userId: session.user.id,
         });
-        console.log(`Generated title: "${title}" for chatId: ${chatId}`);
       } catch (error) {
-        console.warn(
-          'Failed to generate title, using fallback:',
-          error instanceof Error ? error.message : String(error)
-        );
-        // Use a simple fallback title based on the user's message
+        console.warn('Failed to generate title, using fallback:', error);
         const userContent = userMessage.content;
         if (typeof userContent === 'string' && userContent.length > 0) {
           title =
             userContent.slice(0, 50) + (userContent.length > 50 ? '...' : '');
         }
-        console.log(`Using fallback title: "${title}" for chatId: ${chatId}`);
       }
     }
 
-    // Save chat and wait for it to complete before proceeding
     await saveChat({ id: chatId, userId: session.user.id, title });
-    console.log(`New chat saved with ID: ${chatId}`);
   }
 
   // Save the user message
@@ -214,99 +182,18 @@ export async function POST(request: Request) {
   });
 
   const streamingData = new StreamData();
-
-  // Send the chatId to frontend after chat and messages are saved
-  console.log(`Sending chatId to frontend: ${chatId}`);
   streamingData.appendMessageAnnotation({
     chatId: chatId,
   });
 
   try {
-    console.log(
-      `🔍 Processing ${validMessages.length} valid messages for AI (filtered from ${coreMessages.length} total)`
-    );
-
-    // Debug: Show what messages were filtered out
-    const filteredOut = coreMessages.filter((m) => !validMessages.includes(m));
-    if (filteredOut.length > 0) {
-      console.log(
-        `🚫 Filtered out ${filteredOut.length} messages:`,
-        filteredOut.map((m) => ({
-          role: m.role,
-          content:
-            typeof m.content === 'string'
-              ? `"${m.content}"`
-              : `complex content (${Array.isArray(m.content) ? m.content.length : 'unknown'} parts)`,
-          isEmpty:
-            !m.content ||
-            (typeof m.content === 'string' && m.content.trim() === '') ||
-            (Array.isArray(m.content) && m.content.length === 0),
-          reason: !m.content
-            ? 'no content'
-            : typeof m.content === 'string' && m.content.trim() === ''
-              ? 'empty string'
-              : Array.isArray(m.content) && m.content.length === 0
-                ? 'empty array'
-                : Array.isArray(m.content) &&
-                    !m.content.some(
-                      (p) =>
-                        p.type === 'text' && p.text && p.text.trim().length > 0
-                    )
-                  ? 'no valid text parts'
-                  : 'unknown',
-        }))
-      );
-    }
-
-    console.log(
-      '✅ Valid messages being sent to AI:',
-      JSON.stringify(
-        validMessages.map((m) => ({
-          role: m.role,
-          content:
-            typeof m.content === 'string'
-              ? m.content.substring(0, 50) +
-                (m.content.length > 50 ? '...' : '')
-              : `complex content (${Array.isArray(m.content) ? m.content.length : 'unknown'} parts)`,
-          contentType: typeof m.content,
-          hasContent:
-            !!m.content &&
-            (typeof m.content === 'string'
-              ? m.content.trim().length > 0
-              : Array.isArray(m.content)
-                ? m.content.length > 0
-                : true),
-          contentDetails: Array.isArray(m.content)
-            ? m.content.map((p) => ({
-                type: p.type,
-                hasText:
-                  p.type === 'text'
-                    ? !!p.text && p.text.trim().length > 0
-                    : true,
-                textContent:
-                  p.type === 'text'
-                    ? `"${(p.text || '').substring(0, 50)}${(p.text || '').length > 50 ? '...' : ''}"`
-                    : undefined,
-                textLength:
-                  p.type === 'text' ? (p.text || '').length : undefined,
-              }))
-            : undefined,
-        })),
-        null,
-        2
-      )
-    );
     const tokenCount = estimatePromptTokens(systemPrompt, messages);
-    console.log(`🔢 Total token count for system + messages: ${tokenCount}`);
-    // Append token count to the stream data for frontend use
-    // streamingData.appendMessageAnnotation({
-    //   tokenCount: tokenCount,
-    // });
+    console.log(`🔢 Total token count: ${tokenCount}`);
 
-    // Ensure the model is valid and supports streaming
     if (!model || !model.apiIdentifier) {
       return new Response('Invalid model', { status: 400 });
     }
+
     const result = await streamText({
       model: customModel(model.apiIdentifier),
       system: systemPrompt,
@@ -316,13 +203,6 @@ export async function POST(request: Request) {
       tools: {
         ...tools,
       },
-      experimental_telemetry: {
-   isEnabled: true,
-    functionId: 'stream-text',
-    metadata: {
-     hideToolCalls: true // Custom flag if supported
-     }
-   },
       onFinish: async ({ responseMessages }) => {
         try {
           if (session.user && session.user.id) {
@@ -358,7 +238,6 @@ export async function POST(request: Request) {
             }
           }
         } finally {
-          // Always close the stream, even if saving fails
           streamingData.close();
         }
       },
@@ -369,13 +248,27 @@ export async function POST(request: Request) {
     });
 
     console.log('✅ Returning stream response');
+    
+    // 🔥 KEY FIX: Transform the response to filter out tool calls from the UI
     return result.toDataStreamResponse({
       data: streamingData,
+      // This is the proper way to filter streaming data
+      transform: (chunk: any) => {
+        // Allow text chunks and finish chunks to go through
+        if (chunk.type === 'text-delta' || chunk.type === 'finish') {
+          return chunk;
+        }
+        // Filter out tool-call and tool-result chunks from the UI
+        if (chunk.type === 'tool-call' || chunk.type === 'tool-result') {
+          return null; // Don't send to frontend
+        }
+        // Allow other chunks to pass through
+        return chunk;
+      }
     });
   } catch (error) {
     console.error('❌ Error in streamText execution:', error);
 
-    // Ensure stream is closed even on error
     try {
       streamingData.close();
     } catch (closeError) {
@@ -424,4 +317,4 @@ export async function DELETE(request: Request) {
       status: 500,
     });
   }
-}
+      }
