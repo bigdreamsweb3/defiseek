@@ -311,7 +311,7 @@ export async function POST(request: Request) {
       model: customModel(model.apiIdentifier),
       system: systemPrompt,
       messages: validMessages,
-      maxSteps: 1,
+      maxSteps: 2,
       experimental_activeTools: allTools,
       tools: {
         ...tools,
