@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
@@ -101,58 +99,89 @@ export function Chat({
 
   return (
     <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} />
+      {/* Main Chat Container with DeFiSeek branding */}
+      <div className="flex flex-col h-dvh bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+        
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+          <ChatHeader selectedModelId={selectedModelId} />
+        </div>
+
+        {/* Messages Container */}
         <div
           ref={messagesContainerRef}
-          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
+          className="flex-1 overflow-y-auto scroll-smooth"
         >
-          {messages.length === 0 && <Overview />}
-
-          {messages.map((message, index) => (
-            <PreviewMessage
-              key={message.id}
-              chatId={id}
-              message={message}
-              block={block}
-              setBlock={setBlock}
-              isLoading={isLoading && messages.length - 1 === index}
-              vote={
-                votes
-                  ? votes.find((vote) => vote.messageId === message.id)
-                  : undefined
-              }
-            />
-          ))}
-
-          {isLoading &&
-            messages.length > 0 &&
-            messages[messages.length - 1].role === 'user' && (
-              <ThinkingMessage />
+          <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+            {messages.length === 0 && (
+              <div className="flex items-center justify-center min-h-[50vh]">
+                <Overview />
+              </div>
             )}
 
-          <div
-            ref={messagesEndRef}
-            className="shrink-0 min-w-[24px] min-h-[24px]"
-          />
+            {messages.map((message, index) => (
+              <div
+                key={message.id}
+                className="w-full break-words"
+                style={{
+                  wordBreak: 'break-word',
+                  overflowWrap: 'anywhere',
+                  hyphens: 'auto'
+                }}
+              >
+                <PreviewMessage
+                  chatId={id}
+                  message={message}
+                  block={block}
+                  setBlock={setBlock}
+                  isLoading={isLoading && messages.length - 1 === index}
+                  vote={
+                    votes
+                      ? votes.find((vote) => vote.messageId === message.id)
+                      : undefined
+                  }
+                />
+              </div>
+            ))}
+
+            {isLoading &&
+              messages.length > 0 &&
+              messages[messages.length - 1].role === 'user' && (
+                <div className="w-full max-w-2xl mx-auto">
+                  <ThinkingMessage />
+                </div>
+              )}
+
+            <div
+              ref={messagesEndRef}
+              className="h-4 w-full flex-shrink-0"
+            />
+          </div>
         </div>
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          <MultimodalInput
-            chatId={id}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            stop={stop}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            messages={messages}
-            setMessages={setMessages}
-            append={append}
-          />
-        </form>
+
+        {/* Input Form */}
+        <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-700">
+          <div className="max-w-4xl mx-auto p-4">
+            <form className="w-full">
+              <MultimodalInput
+                chatId={id}
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                setMessages={setMessages}
+                append={append}
+              />
+            </form>
+          </div>
+        </div>
       </div>
 
+      {/* Block Overlay */}
       <AnimatePresence>
         {block && block.isVisible && (
           <Block
@@ -175,6 +204,74 @@ export function Chat({
       </AnimatePresence>
 
       <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} />
+
+      {/* Custom CSS for better text handling */}
+      <style jsx global>{`
+        /* Force break long words like wallet addresses */
+        .message-content {
+          word-break: break-all;
+          overflow-wrap: break-word;
+          hyphens: auto;
+        }
+        
+        /* Ethereum address styling */
+        .message-content code,
+        .message-content pre {
+          word-break: break-all;
+          white-space: pre-wrap;
+          overflow-wrap: break-word;
+        }
+        
+        /* Mobile-specific improvements */
+        @media (max-width: 768px) {
+          .message-content {
+            font-size: 14px;
+            line-height: 1.5;
+          }
+          
+          /* Ensure long strings don't break mobile layout */
+          .message-content * {
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-break: break-word;
+          }
+        }
+        
+        /* DeFiSeek brand colors */
+        .defiseek-gradient {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+        }
+        
+        .defiseek-text-gradient {
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        /* Smooth scrolling */
+        .scroll-smooth {
+          scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        .chat-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .chat-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        
+        .chat-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(148, 163, 184, 0.3);
+          border-radius: 3px;
+        }
+        
+        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(148, 163, 184, 0.5);
+        }
+      `}</style>
     </>
   );
-}
+    }
