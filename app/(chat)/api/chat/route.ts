@@ -38,11 +38,13 @@ export const maxDuration = 60;
 type AllowedTools =
   | 'checkSupportedChains'
   | 'validateChain'
-  | 'checkWalletScore';
+  | 'checkWalletScore'
+  | 'analyzeNFTMarketInsights';
 const allTools: AllowedTools[] = [
   'checkSupportedChains',
   'validateChain',
   'checkWalletScore',
+  'analyzeNFTMarketInsights',
 ];
 
 export async function POST(request: Request) {

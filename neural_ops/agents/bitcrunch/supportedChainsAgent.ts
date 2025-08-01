@@ -20,7 +20,7 @@ export type SupportedChains = z.infer<typeof SupportedChainsSchema>;
 
 /**
  * bitsCrunch blockchain intelligence agent that fetches supported blockchains
- * 
+ *
  * This agent:
  * 1. Fetches a list of supported blockchains from UnleashNFTs API
  * 2. Returns them in a structured format for validation and use
@@ -29,50 +29,58 @@ export type SupportedChains = z.infer<typeof SupportedChainsSchema>;
  */
 const supportedChainsAgent = ApiClient.define({
   id: 'supportedChainsAgent',
-  description: 'Fetches and returns supported blockchains by and from UnleashNFTs bitsCrunch API',
+  description:
+    'Fetches and returns supported blockchains by and from UnleashNFTs bitsCrunch API',
   output: SupportedChainsSchema,
-  
+
   async run(): Promise<SupportedChains> {
     // Get API key from environment
-    const apiKey = process.env.UNLEASH_API_KEY || 'b5ae8831a61c4a3b83dc6e4b3dc106f2';
-    
-    console.log('🔗 Fetching supported chains from UnleashNFTs bitsCrunch API...');
-    
+    const apiKey = process.env.UNLEASH_API_KEY;
+
+    console.log(
+      '🔗 Fetching supported chains from UnleashNFTs bitsCrunch API...'
+    );
+
+    const headers: HeadersInit = {
+      accept: 'application/json',
+      ...(apiKey ? { 'x-api-key': apiKey } : {}),
+    };
+
     const response = await fetch(
       'https://api.unleashnfts.com/api/v2/blockchains?offset=0&limit=30',
       {
         method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'x-api-key': apiKey,
-        },
+        headers,
       }
     );
 
     if (!response.ok) {
-      throw new Error(`UnleashNFTs API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `UnleashNFTs API error: ${response.status} ${response.statusText}`
+      );
     }
 
     const data = await response.json();
-    
+
     // Extract the blockchain data from the response
     const blockchains = data?.data || [];
-    
+
     if (!Array.isArray(blockchains)) {
       throw new Error('Invalid response format from UnleashNFTs API');
     }
-    
+
     console.log(`✅ Found ${blockchains.length} supported chains`);
-    
+
     // Transform the data to match our schema
     const supportedChains: SupportedChains = blockchains.map((chain: any) => ({
       id: String(chain.id || chain.blockchain_id || ''),
       name: chain.name || chain.blockchain_name || 'Unknown',
-      slug: chain.slug || chain.blockchain_slug || chain.name?.toLowerCase() || '',
+      slug:
+        chain.slug || chain.blockchain_slug || chain.name?.toLowerCase() || '',
     }));
 
     return supportedChains;
-  }
+  },
 });
 
 export default supportedChainsAgent;

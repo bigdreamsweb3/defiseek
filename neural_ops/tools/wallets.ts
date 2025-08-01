@@ -3,6 +3,17 @@
 import { z } from 'zod';
 import walletScoreAgent from '../agents/bitcrunch/wallet/walletScoreAgent';
 
+const extractAddress = (input: string): string => {
+  const matches = input.match(/0x[a-fA-F0-9]{40}/g);
+  if (!matches || matches.length === 0) {
+    throw new Error('No valid wallet address found.');
+  }
+  if (matches.length > 1) {
+    console.warn('⚠️ Multiple wallet addresses found. Using the first one.');
+  }
+  return matches[0];
+};
+
 export const checkWalletScore = {
   description: `Retrieve a comprehensive overview of a wallet's activity and risk assessment, including key metrics such as interaction patterns,
 classification, and risk scores.
@@ -17,12 +28,12 @@ It also lists interaction scores related to smart contracts, staking, governance
 
   execute: async ({ address }: { address: string }) => {
     try {
-      const walletScore = await walletScoreAgent.execute(address);
-
+      const cleanAddress = extractAddress(address); // 👈 Ensure it's only one address
+      const result = await walletScoreAgent.execute(cleanAddress);
       return {
         success: true,
-        walletScore,
-        message: `Found wallet score for ${address}`,
+        result,
+        message: `Wallet score found for ${cleanAddress}`,
       };
     } catch (error) {
       console.error('❌ Error in checkWalletScore tool:', error);

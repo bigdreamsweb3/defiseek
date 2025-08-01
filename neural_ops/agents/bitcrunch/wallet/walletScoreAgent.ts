@@ -32,8 +32,7 @@ export const walletScoreAgent = ApiClient.define({
   output: WalletScoreSchema,
 
   async run(address: string): Promise<WalletScore> {
-    const apiKey =
-      process.env.UNLEASH_API_KEY ?? 'b5ae8831a61c4a3b83dc6e4b3dc106f2';
+    const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
     if (!address) {
       throw new Error('⚠️ No wallet address provided to walletScoreAgent.');
@@ -55,12 +54,14 @@ export const walletScoreAgent = ApiClient.define({
 
       const url = `https://api.unleashnfts.com/api/v2/wallet/score?wallet_address=${address}&time_range=all&offset=0&limit=30`;
 
+      const headers: HeadersInit = {
+        accept: 'application/json',
+        ...(apiKey ? { 'x-api-key': apiKey } : {}),
+      };
+
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          accept: 'application/json',
-          'x-api-key': apiKey,
-        },
+        headers,
       });
 
       const data = await response.json();

@@ -30,7 +30,7 @@ export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
               className="w-6 h-6 cursor-pointer rounded-full"
             />
 
-            <span className="font-semibold text-sm hidden md:block">
+            <span className="font-semibold text-sm block">
               DeFiSeek
             </span>
           </div>
