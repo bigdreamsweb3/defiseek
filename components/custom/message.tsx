@@ -134,11 +134,23 @@ export const PreviewMessage = ({
                         {result.success ? (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-muted-foreground">Score:</span>
-                              <span className="font-semibold text-foreground">{result.data?.walletScore}</span>
-                              <span className="text-sm text-muted-foreground">—</span>
-                              <span className="text-sm text-muted-foreground">{result.data?.classification}</span>
-                            </div>
+  <span className="text-sm text-muted-foreground">Score:</span>
+  <span className="font-semibold text-foreground">{result.data?.walletScore}/100</span>
+  <span className="text-sm text-muted-foreground">—</span>
+  <span
+    className={cx(
+      "text-sm font-medium",
+      result.data?.walletScore < 30
+        ? "text-red-600"
+        : result.data?.walletScore < 60
+        ? "text-orange-500"
+        : "text-green-600"
+    )}
+  >
+    {result.data?.classification}
+  </span>
+</div>
+
                             <div className="grid grid-cols-2 gap-3 text-xs">
                               <div className="bg-muted rounded-md p-2">
                                 <div className="text-muted-foreground mb-1">Anomalous Pattern</div>
@@ -151,10 +163,6 @@ export const PreviewMessage = ({
                               <div className="bg-muted rounded-md p-2">
                                 <div className="text-muted-foreground mb-1">Risk Interaction</div>
                                 <div className="font-medium">{result.data?.riskScores?.riskInteractionScore}</div>
-                              </div>
-                              <div className="bg-muted rounded-md p-2">
-                                <div className="text-muted-foreground mb-1">Wallet Age</div>
-                                <div className="font-medium">{result.data?.riskScores?.walletAgeScore}</div>
                               </div>
                             </div>
                             {result.data?.illicitFlags && (
