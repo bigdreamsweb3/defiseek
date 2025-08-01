@@ -160,7 +160,7 @@ export const PreviewMessage = ({
     <div className="bg-muted rounded-md p-2">
       <div className="text-muted-foreground mb-1">Wallet Age</div>
       <div className="font-medium">
-        {result.data?.riskScores?.walletAgeScore}/10
+        {result.data?.riskScores?.walletAgeScore?.toFixed(1)}/10
       </div>
     </div>
 
