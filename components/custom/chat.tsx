@@ -57,11 +57,7 @@ export function Chat({
       ) as { chatId: string } | undefined;
 
       if (chatData?.chatId && pathname !== `/chat/${chatData.chatId}`) {
-        // Only navigate if we're starting a new chat from the home page
-        // Don't navigate if we're already in a chat or if the current chat ID matches
         if (pathname === '/' && id !== chatData.chatId) {
-          // Use router.replace instead of router.push to avoid adding to history
-          // and use a small delay to ensure the response is visible first
           setTimeout(() => {
             router.replace(`/chat/${chatData.chatId}`, { scroll: false });
           }, 100);
@@ -99,84 +95,84 @@ export function Chat({
 
   return (
     <>
-      {/* Main Chat Container with DeFiSeek branding */}
-      <div className="flex flex-col h-dvh bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 overflow-hidden">
+      {/* Professional Chat Interface */}
+      <div className="flex flex-col h-dvh bg-neutral-50 dark:bg-neutral-950 font-mono">
         
-        {/* Header */}
-        <div className="flex-shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+        {/* Clean Header */}
+        <div className="flex-shrink-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
           <ChatHeader selectedModelId={selectedModelId} />
         </div>
 
-        {/* Messages Container */}
+        {/* Messages Area */}
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto scroll-smooth chat-scrollbar min-h-0"
+          className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700"
         >
-          <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+          <div className="max-w-4xl mx-auto">
             {messages.length === 0 && (
-              <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="flex items-center justify-center min-h-[60vh]">
                 <Overview />
               </div>
             )}
 
-            {messages.map((message, index) => (
-              <div
-                key={message.id}
-                className="w-full break-words"
-                style={{
-                  wordBreak: 'break-word',
-                  overflowWrap: 'anywhere',
-                  hyphens: 'auto'
-                }}
-              >
-                <PreviewMessage
-                  chatId={id}
-                  message={message}
-                  block={block}
-                  setBlock={setBlock}
-                  isLoading={isLoading && messages.length - 1 === index}
-                  vote={
-                    votes
-                      ? votes.find((vote) => vote.messageId === message.id)
-                      : undefined
-                  }
-                />
-              </div>
-            ))}
+            <div className="space-y-1">
+              {messages.map((message, index) => (
+                <div
+                  key={message.id}
+                  className="px-4 py-3 hover:bg-neutral-100/30 dark:hover:bg-neutral-900/30 transition-colors duration-200"
+                >
+                  <div 
+                    className="max-w-none break-words"
+                    style={{
+                      wordBreak: 'break-word',
+                      overflowWrap: 'anywhere'
+                    }}
+                  >
+                    <PreviewMessage
+                      chatId={id}
+                      message={message}
+                      block={block}
+                      setBlock={setBlock}
+                      isLoading={isLoading && messages.length - 1 === index}
+                      vote={
+                        votes
+                          ? votes.find((vote) => vote.messageId === message.id)
+                          : undefined
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {isLoading &&
               messages.length > 0 &&
               messages[messages.length - 1].role === 'user' && (
-                <div className="w-full max-w-2xl mx-auto">
+                <div className="px-4 py-3">
                   <ThinkingMessage />
                 </div>
               )}
 
-            <div
-              ref={messagesEndRef}
-              className="h-4 w-full flex-shrink-0"
-            />
+            <div ref={messagesEndRef} className="h-6" />
           </div>
         </div>
 
-        {/* Input Form */}
-        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 safe-area-bottom">
-          <div className="max-w-4xl mx-auto p-4 pb-safe">
-            <form className="w-full">
-              <MultimodalInput
-                chatId={id}
-                input={input}
-                setInput={setInput}
-                handleSubmit={handleSubmit}
-                isLoading={isLoading}
-                stop={stop}
-                attachments={attachments}
-                setAttachments={setAttachments}
-                messages={messages}
-                setMessages={setMessages}
-                append={append}
-              />
-            </form>
+        {/* Input Area */}
+        <div className="flex-shrink-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-t border-neutral-200/50 dark:border-neutral-800/50">
+          <div className="max-w-4xl mx-auto p-4">
+            <MultimodalInput
+              chatId={id}
+              input={input}
+              setInput={setInput}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+              stop={stop}
+              attachments={attachments}
+              setAttachments={setAttachments}
+              messages={messages}
+              setMessages={setMessages}
+              append={append}
+            />
           </div>
         </div>
       </div>
@@ -205,88 +201,151 @@ export function Chat({
 
       <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} />
 
-      {/* Custom CSS for better text handling */}
+      {/* Minimal Professional Styling */}
       <style jsx global>{`
-        /* Force break long words like wallet addresses */
-        .message-content {
-          word-break: break-all;
-          overflow-wrap: break-word;
-          hyphens: auto;
+        /* Typography - Blockchain precision */
+        .font-mono {
+          font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: -0.025em;
         }
         
-        /* Ethereum address styling */
+        /* Message content styling */
+        .message-content {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+          font-size: 15px;
+          line-height: 1.6;
+          color: #171717;
+          word-break: break-word;
+          overflow-wrap: break-word;
+        }
+        
+        .dark .message-content {
+          color: #fafafa;
+        }
+        
+        /* Code and addresses */
         .message-content code,
-        .message-content pre {
+        .message-content pre,
+        .message-content .crypto-address {
+          font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+          font-size: 13px;
+          background: #f5f5f5;
+          color: #525252;
+          padding: 2px 6px;
+          border-radius: 4px;
           word-break: break-all;
           white-space: pre-wrap;
-          overflow-wrap: break-word;
         }
         
-        /* Mobile keyboard handling */
+        .dark .message-content code,
+        .dark .message-content pre,
+        .dark .message-content .crypto-address {
+          background: #262626;
+          color: #a3a3a3;
+        }
+        
+        /* Wallet addresses and hashes */
+        .message-content [data-crypto-address] {
+          font-family: 'SF Mono', monospace;
+          font-size: 13px;
+          background: #f8f8f8;
+          border: 1px solid #e5e5e5;
+          padding: 4px 8px;
+          border-radius: 6px;
+          word-break: break-all;
+          display: inline-block;
+          max-width: 100%;
+        }
+        
+        .dark .message-content [data-crypto-address] {
+          background: #1a1a1a;
+          border-color: #404040;
+        }
+        
+        /* Mobile optimizations */
         @media (max-width: 768px) {
           .message-content {
             font-size: 14px;
             line-height: 1.5;
           }
           
-          /* Ensure long strings don't break mobile layout */
-          .message-content * {
-            max-width: 100%;
-            overflow-wrap: break-word;
-            word-break: break-word;
+          .message-content code,
+          .message-content pre {
+            font-size: 12px;
+            padding: 3px 6px;
           }
           
-          /* Safe area for mobile devices */
-          .safe-area-bottom {
-            padding-bottom: env(safe-area-inset-bottom);
-          }
-          
-          .pb-safe {
-            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-          }
-          
-          /* Ensure proper viewport height handling on mobile */
+          /* Ensure proper mobile viewport */
           .h-dvh {
-            height: 100dvh;
             height: 100vh;
+            height: 100dvh;
           }
         }
         
-        /* DeFiSeek brand colors */
-        .defiseek-gradient {
-          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+        /* Subtle scroll indicators */
+        .scrollbar-thin {
+          scrollbar-width: thin;
         }
         
-        .defiseek-text-gradient {
-          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        .scrollbar-track-transparent {
+          scrollbar-color: transparent transparent;
         }
         
-        /* Smooth scrolling */
-        .scroll-smooth {
-          scroll-behavior: smooth;
+        .scrollbar-thumb-neutral-300 {
+          scrollbar-color: #d4d4d4 transparent;
         }
         
-        /* Custom scrollbar */
-        .chat-scrollbar::-webkit-scrollbar {
+        .dark .scrollbar-thumb-neutral-700 {
+          scrollbar-color: #404040 transparent;
+        }
+        
+        /* Webkit scrollbar */
+        ::-webkit-scrollbar {
           width: 6px;
         }
         
-        .chat-scrollbar::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
           background: transparent;
         }
         
-        .chat-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(148, 163, 184, 0.3);
+        ::-webkit-scrollbar-thumb {
+          background: #d4d4d4;
           border-radius: 3px;
         }
         
-        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(148, 163, 184, 0.5);
+        .dark ::-webkit-scrollbar-thumb {
+          background: #404040;
+        }
+        
+        /* Focus states */
+        *:focus-visible {
+          outline: 2px solid #171717;
+          outline-offset: 2px;
+        }
+        
+        .dark *:focus-visible {
+          outline-color: #fafafa;
+        }
+        
+        /* Subtle animations */
+        .transition-colors {
+          transition-property: color, background-color, border-color;
+          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          transition-duration: 200ms;
+        }
+        
+        /* Clean selection */
+        ::selection {
+          background: #171717;
+          color: white;
+        }
+        
+        .dark ::selection {
+          background: #fafafa;
+          color: black;
         }
       `}</style>
     </>
   );
-                    }
+        }
