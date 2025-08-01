@@ -109,10 +109,107 @@ export const PreviewMessage = ({
                             </div>
                           )}
                         </div>
+                      ) : toolName === 'checkWalletScore' ? (
+                        <div className={`border rounded-lg p-4 ${
+                          result.success
+                            ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                            : 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800'
+                        }`}>
+                          <h4 className={`font-semibold mb-2 flex items-center gap-2 ${
+                            result.success
+                              ? 'text-green-900 dark:text-green-100'
+                              : 'text-orange-900 dark:text-orange-100'
+                          }`}>
+                            🛡️ Wallet Safety Analysis
+                            <span className="text-xs font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded">
+                              {args.address?.slice(0, 6)}...{args.address?.slice(-4)}
+                            </span>
+                          </h4>
+                          
+                          {result.success ? (
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Classification</p>
+                                  <p className="text-sm font-medium">{result.data?.classification}</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Wallet Score</p>
+                                  <p className="text-sm font-medium">{result.data?.walletScore}/100</p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Risk Scores</p>
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div>Suspicious Activity: {result.data?.riskScores?.anomalousPattern}</div>
+                                  <div>Token Interaction: {result.data?.riskScores?.associatedToken}</div>
+                                  <div>Risk Exposure: {result.data?.riskScores?.riskInteraction}</div>
+                                  <div>Account Age: {result.data?.riskScores?.walletAge}</div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
+                                  {result.data?.blockchain}
+                                </span>
+                                {result.data?.illicitFlags && (
+                                  <span className="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded">
+                                    Flagged Activity
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p className="text-sm text-orange-700 dark:text-orange-300">
+                                ⚠️ Analysis Unavailable
+                              </p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                {result.message || 'Could not retrieve wallet safety data'}
+                              </p>
+                              <div className="text-xs bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 p-2 rounded">
+                                💡 Try checking this wallet manually on Etherscan, BaseScan, or DeBank
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : toolName === 'analyzeNFTMarketInsights' ? (
+                        <div className="bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                          <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2 flex items-center gap-2">
+                            🖼️ NFT Collection Analysis
+                          </h4>
+                          {result.success ? (
+                            <div className="space-y-2">
+                              <p className="text-sm text-purple-700 dark:text-purple-300">
+                                Collection: {result.data?.collectionName}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                {result.data?.verified && (
+                                  <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
+                                    ✅ Verified
+                                  </span>
+                                )}
+                                {result.data?.riskFlags?.length > 0 && (
+                                  <span className="text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded">
+                                    ⚠️ Risk Flags
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-red-600 dark:text-red-400">
+                              {result.message || 'NFT analysis failed'}
+                            </p>
+                          )}
+                        </div>
                       ) : (
-                        <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto">
-                          {JSON.stringify(result, null, 2)}
-                        </pre>
+                        // 🔥 HIDE UNKNOWN TOOLS - Don't show raw JSON
+                        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3">
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            🔧 Tool executed: {toolName}
+                          </p>
+                        </div>
                       )}
                     </div>
                   );
@@ -129,6 +226,20 @@ export const PreviewMessage = ({
                           <Skeleton className="h-4 w-40 mb-2" />
                           <Skeleton className="h-3 w-24" />
                         </div>
+                      ) : toolName === 'checkWalletScore' ? (
+                        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                          <Skeleton className="h-4 w-48 mb-2" />
+                          <Skeleton className="h-3 w-32 mb-2" />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-3 w-20" />
+                          </div>
+                        </div>
+                      ) : toolName === 'analyzeNFTMarketInsights' ? (
+                        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+                          <Skeleton className="h-4 w-40 mb-2" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
                       ) : (
                         <div className="bg-gray-100 dark:bg-gray-800 rounded p-2">
                           <Skeleton className="h-3 w-32" />
@@ -140,17 +251,6 @@ export const PreviewMessage = ({
               })}
             </div>
           )}
-
-          {/* {message.experimental_attachments && (
-            <div className="flex flex-row gap-2">
-              {message.experimental_attachments.map((attachment) => (
-                <PreviewAttachment
-                  key={attachment.url}
-                  attachment={attachment}
-                />
-              ))}
-            </div>
-          )} */}
 
           <MessageActions
             key={`action-${message.id}`}
