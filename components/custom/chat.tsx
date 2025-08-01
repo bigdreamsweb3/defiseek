@@ -57,7 +57,11 @@ export function Chat({
       ) as { chatId: string } | undefined;
 
       if (chatData?.chatId && pathname !== `/chat/${chatData.chatId}`) {
+        // Only navigate if we're starting a new chat from the home page
+        // Don't navigate if we're already in a chat or if the current chat ID matches
         if (pathname === '/' && id !== chatData.chatId) {
+          // Use router.replace instead of router.push to avoid adding to history
+          // and use a small delay to ensure the response is visible first
           setTimeout(() => {
             router.replace(`/chat/${chatData.chatId}`, { scroll: false });
           }, 100);
@@ -95,89 +99,67 @@ export function Chat({
 
   return (
     <>
-      {/* Professional Chat Interface */}
-      <div className="flex flex-col h-dvh bg-neutral-50 dark:bg-neutral-950 font-mono">
-        
-        {/* Clean Header */}
-        <div className="flex-shrink-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
-          <ChatHeader selectedModelId={selectedModelId} />
-        </div>
-
-        {/* Messages Area */}
+      <div className="flex flex-col min-w-0 h-dvh bg-background overflow-hidden">
+        <ChatHeader selectedModelId={selectedModelId} />
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700"
+          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 px-4"
         >
-          <div className="max-w-4xl mx-auto">
-            {messages.length === 0 && (
-              <div className="flex items-center justify-center min-h-[60vh]">
-                <Overview />
-              </div>
+          {messages.length === 0 && <Overview />}
+
+          {messages.map((message, index) => (
+            <div
+              key={message.id}
+              className="w-full"
+              style={{
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+                maxWidth: '100%'
+              }}
+            >
+              <PreviewMessage
+                chatId={id}
+                message={message}
+                block={block}
+                setBlock={setBlock}
+                isLoading={isLoading && messages.length - 1 === index}
+                vote={
+                  votes
+                    ? votes.find((vote) => vote.messageId === message.id)
+                    : undefined
+                }
+              />
+            </div>
+          ))}
+
+          {isLoading &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === 'user' && (
+              <ThinkingMessage />
             )}
 
-            <div className="space-y-1">
-              {messages.map((message, index) => (
-                <div
-                  key={message.id}
-                  className="px-4 py-3 hover:bg-neutral-100/30 dark:hover:bg-neutral-900/30 transition-colors duration-200"
-                >
-                  <div 
-                    className="max-w-none break-words"
-                    style={{
-                      wordBreak: 'break-word',
-                      overflowWrap: 'anywhere'
-                    }}
-                  >
-                    <PreviewMessage
-                      chatId={id}
-                      message={message}
-                      block={block}
-                      setBlock={setBlock}
-                      isLoading={isLoading && messages.length - 1 === index}
-                      vote={
-                        votes
-                          ? votes.find((vote) => vote.messageId === message.id)
-                          : undefined
-                      }
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {isLoading &&
-              messages.length > 0 &&
-              messages[messages.length - 1].role === 'user' && (
-                <div className="px-4 py-3">
-                  <ThinkingMessage />
-                </div>
-              )}
-
-            <div ref={messagesEndRef} className="h-6" />
-          </div>
+          <div
+            ref={messagesEndRef}
+            className="shrink-0 min-w-[24px] min-h-[24px]"
+          />
         </div>
-
-        {/* Input Area */}
-        <div className="flex-shrink-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border-t border-neutral-200/50 dark:border-neutral-800/50">
-          <div className="max-w-4xl mx-auto p-4">
-            <MultimodalInput
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              append={append}
-            />
-          </div>
-        </div>
+        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl flex-shrink-0">
+          <MultimodalInput
+            chatId={id}
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+            stop={stop}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            messages={messages}
+            setMessages={setMessages}
+            append={append}
+          />
+        </form>
       </div>
 
-      {/* Block Overlay */}
       <AnimatePresence>
         {block && block.isVisible && (
           <Block
@@ -201,69 +183,27 @@ export function Chat({
 
       <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} />
 
-      {/* Minimal Professional Styling */}
+      {/* Logo-themed styling with cyan accents */}
       <style jsx global>{`
-        /* Typography - Blockchain precision */
-        .font-mono {
-          font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
-          font-variant-numeric: tabular-nums;
-          letter-spacing: -0.025em;
-        }
-        
-        /* Message content styling */
-        .message-content {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-          font-size: 15px;
-          line-height: 1.6;
-          color: #171717;
+        /* Responsive text breaking for crypto addresses */
+        .message-content,
+        .message-content * {
           word-break: break-word;
           overflow-wrap: break-word;
-        }
-        
-        .dark .message-content {
-          color: #fafafa;
-        }
-        
-        /* Code and addresses */
-        .message-content code,
-        .message-content pre,
-        .message-content .crypto-address {
-          font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
-          font-size: 13px;
-          background: #f5f5f5;
-          color: #525252;
-          padding: 2px 6px;
-          border-radius: 4px;
-          word-break: break-all;
-          white-space: pre-wrap;
-        }
-        
-        .dark .message-content code,
-        .dark .message-content pre,
-        .dark .message-content .crypto-address {
-          background: #262626;
-          color: #a3a3a3;
-        }
-        
-        /* Wallet addresses and hashes */
-        .message-content [data-crypto-address] {
-          font-family: 'SF Mono', monospace;
-          font-size: 13px;
-          background: #f8f8f8;
-          border: 1px solid #e5e5e5;
-          padding: 4px 8px;
-          border-radius: 6px;
-          word-break: break-all;
-          display: inline-block;
           max-width: 100%;
         }
         
-        .dark .message-content [data-crypto-address] {
-          background: #1a1a1a;
-          border-color: #404040;
+        /* Crypto addresses and long strings */
+        .message-content code,
+        .message-content pre {
+          word-break: break-all;
+          white-space: pre-wrap;
+          overflow-wrap: break-word;
+          font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+          font-size: 0.9em;
         }
         
-        /* Mobile optimizations */
+        /* Mobile responsive improvements */
         @media (max-width: 768px) {
           .message-content {
             font-size: 14px;
@@ -273,34 +213,60 @@ export function Chat({
           .message-content code,
           .message-content pre {
             font-size: 12px;
-            padding: 3px 6px;
+            padding: 4px 6px;
+            border-radius: 4px;
           }
           
-          /* Ensure proper mobile viewport */
+          /* Ensure long strings don't break mobile layout */
+          * {
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+          
+          /* Mobile viewport handling */
           .h-dvh {
             height: 100vh;
             height: 100dvh;
           }
         }
         
-        /* Subtle scroll indicators */
-        .scrollbar-thin {
-          scrollbar-width: thin;
+        /* DeFiSeek cyan theme matching the logo */
+        :root {
+          --defiseek-cyan: #00ffff;
+          --defiseek-cyan-light: #4dffff;
+          --defiseek-cyan-dark: #00cccc;
+          --defiseek-glow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
         
-        .scrollbar-track-transparent {
-          scrollbar-color: transparent transparent;
+        /* Subtle cyan accents */
+        .border-cyan-accent {
+          border-color: rgba(0, 255, 255, 0.2);
         }
         
-        .scrollbar-thumb-neutral-300 {
-          scrollbar-color: #d4d4d4 transparent;
+        .bg-cyan-glow {
+          background: radial-gradient(circle at center, rgba(0, 255, 255, 0.05) 0%, transparent 70%);
         }
         
-        .dark .scrollbar-thumb-neutral-700 {
-          scrollbar-color: #404040 transparent;
+        .text-cyan-accent {
+          color: var(--defiseek-cyan);
         }
         
-        /* Webkit scrollbar */
+        /* Hover states with cyan */
+        .hover-cyan:hover {
+          border-color: rgba(0, 255, 255, 0.4);
+          box-shadow: var(--defiseek-glow);
+        }
+        
+        /* Focus states */
+        input:focus,
+        textarea:focus,
+        button:focus {
+          outline: none;
+          border-color: var(--defiseek-cyan) !important;
+          box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2) !important;
+        }
+        
+        /* Scrollbar styling */
         ::-webkit-scrollbar {
           width: 6px;
         }
@@ -310,42 +276,34 @@ export function Chat({
         }
         
         ::-webkit-scrollbar-thumb {
-          background: #d4d4d4;
+          background: rgba(0, 255, 255, 0.3);
           border-radius: 3px;
         }
         
+        ::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 255, 255, 0.5);
+        }
+        
+        /* Dark mode scrollbar */
         .dark ::-webkit-scrollbar-thumb {
-          background: #404040;
+          background: rgba(0, 255, 255, 0.4);
         }
         
-        /* Focus states */
-        *:focus-visible {
-          outline: 2px solid #171717;
-          outline-offset: 2px;
+        .dark ::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 255, 255, 0.6);
         }
         
-        .dark *:focus-visible {
-          outline-color: #fafafa;
-        }
-        
-        /* Subtle animations */
-        .transition-colors {
-          transition-property: color, background-color, border-color;
-          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-          transition-duration: 200ms;
-        }
-        
-        /* Clean selection */
+        /* Selection color matching logo */
         ::selection {
-          background: #171717;
-          color: white;
+          background: rgba(0, 255, 255, 0.3);
+          color: inherit;
         }
         
-        .dark ::selection {
-          background: #fafafa;
-          color: black;
+        /* Smooth transitions */
+        * {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
       `}</style>
     </>
   );
-        }
+          }
