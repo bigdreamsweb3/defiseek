@@ -160,8 +160,8 @@ export const PreviewMessage = ({
                               </div>
 
                               <div className="bg-muted rounded-md p-2">
-                                <div className="text-muted-foreground mb-1">Anomalous Pattern</div>
-                                <div className="font-medium">{result.data?.riskScore?. walletAgeScore}</div>
+                                <div className="text-muted-foreground mb-1">Age Score</div>
+                                <div className="font-medium">{result.data?.riskScore?.walletAgeScore}/10</div>
                               </div>
 
                               
