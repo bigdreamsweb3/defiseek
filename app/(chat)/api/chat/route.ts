@@ -29,11 +29,14 @@ type AllowedTools =
   | 'checkSupportedChains'
   | 'validateChain'
   | 'checkWalletScore'
+  | 'nftMarketAnalyticsTool' // 👈 add this
   | '';
+
 const allTools: AllowedTools[] = [
   'checkSupportedChains',
   'validateChain',
   'checkWalletScore',
+  'nftMarketAnalyticsTool', // 👈 add this
   '',
 ];
 
