@@ -35,7 +35,7 @@ const supportedChainsAgent = ApiClient.define({
 
   async run(): Promise<SupportedChains> {
     // Get API key from environment
-    const apiKey = process.env.UNLEASH_API_KEY;
+    const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
     console.log(
       '🔗 Fetching supported chains from UnleashNFTs bitsCrunch API...'
