@@ -316,6 +316,13 @@ export async function POST(request: Request) {
       tools: {
         ...tools,
       },
+      experimental_telemetry: {
+   isEnabled: true,
+    functionId: 'stream-text',
+    metadata: {
+     hideToolCalls: true // Custom flag if supported
+     }
+   },
       onFinish: async ({ responseMessages }) => {
         try {
           if (session.user && session.user.id) {
