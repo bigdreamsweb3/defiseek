@@ -52,7 +52,7 @@ const nftMarketAnalyticsAgent = ApiClient.define({
   async run(
     params?: Partial<NFTMarketAnalyticsInput>
   ): Promise<NFTMarketAnalytics> {
-    const apiKey = process.env.UNLEASH_API_KEY;
+    const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
     // Parse input and apply default values
     const { blockchain, time_range } = NFTMarketAnalyticsInputSchema.parse(
