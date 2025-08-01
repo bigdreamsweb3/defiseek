@@ -29,40 +29,20 @@ It also lists interaction scores related to smart contracts, staking, governance
   execute: async ({ address }: { address: string }) => {
     try {
       const cleanAddress = extractAddress(address); // 👈 Ensure it's only one address
-      const data = await walletScoreAgent.execute(cleanAddress); // ✅ FIXED VARIABLE NAME
-
-      const riskLevel =
-        data.wallet_score >= 80
-          ? 'Low'
-          : data.wallet_score >= 50
-          ? 'Medium'
-          : 'High';
-
+      const result = await walletScoreAgent.execute(cleanAddress);
       return {
         success: true,
-        walletAddress: data.wallet_address,
-        walletScore: data.wallet_score,
-        riskLevel,
-        classification: data.classification,
-        classificationType: data.classification_type,
-        ageScore: data.wallet_age_score,
-        flags: [
-          data.illicit && data.illicit !== 'none'
-            ? '⚠️ Illicit Activity Detected'
-            : null,
-          data.classification_type !== 'normal'
-            ? `🔍 Type: ${data.classification_type}`
-            : null,
-        ].filter(Boolean),
-        message: `Wallet ${data.wallet_address} has a score of ${data.wallet_score} (${riskLevel} Risk) — classified as ${data.classification_type}.`,
+        result,
+        message: `Wallet score found for ${cleanAddress}`,
       };
     } catch (error) {
+      console.error('❌ Error in checkWalletScore tool:', error);
       return {
         success: false,
-        walletAddress: address,
-        walletScore: null,
-        message: `⚠️ I couldn't fetch a verified score for this wallet. Based on behavior I've seen across DeFi, this address may carry risk — especially if newly created or unverified. Proceed cautiously.`,
-        flags: ['No score available from safety signals'],
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch wallet score',
       };
     }
   },
