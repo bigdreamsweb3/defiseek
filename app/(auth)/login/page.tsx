@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -49,7 +50,7 @@ export default function Page() {
       <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
         <div className="flex flex-col items-center justify-center gap-3 px-4 text-center sm:px-16">
           <Image
-            src="/logo.svg"
+            src="/images/logo.svg"
             alt="DeFiSeek Logo"
             width={48}
             height={48}
