@@ -75,9 +75,10 @@ const nftMarketAnalyticsAgent = ApiClient.define({
       url.searchParams.set('time_range', normalizedTimeRange);
 
       const headers: HeadersInit = {
-        accept: 'application/json',
-        ...(apiKey ? { 'x-api-key': apiKey } : {}),
-      };
+      accept: 'application/json',
+      'x-api-key': apiKey,
+      'Content-Type': 'application/json',
+    };
 
       const response = await fetch(url.toString(), {
         method: 'GET',
