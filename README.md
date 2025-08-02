@@ -41,12 +41,10 @@ DeFiSeek integrates bitsCrunch APIs to power real-time safety and market insight
 
 We are actively building and adding more AI agents (“ag-gens”) to deepen DeFiSeek’s market analysis capabilities, including:
 
-- Enhanced trend detection for NFT and token markets  
-- Advanced wallet behavioral analytics  
-- Cross-chain risk aggregation  
-- Real-time scam pattern recognition  
+* 🧠 **Bounty & Airdrop Discovery**: Scanning and ranking opportunities based on safety, legitimacy, and profile-fit.
+* 🔌 **Developer-Contributed Tools**: Soon, any developer will be able to build and plug in their own agents using our SDK.
 
-Our modular agent architecture ensures fast iteration and integration of new data sources for richer insights.
+Our modular agent architecture ensures fast iteration, flexible integrations, and a growing ecosystem of real-time blockchain intelligence.
 
 ---
 
