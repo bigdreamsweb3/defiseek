@@ -3,7 +3,7 @@
 import { FC, useEffect, useState } from 'react';
 
 const allQuickQuestions = [
-  'Explain my wallet risk score.'
+  'Explain my wallet risk score.',
   'Any wallet risks?',
   'Wallet score breakdown',
   'Is this NFT safe?',
