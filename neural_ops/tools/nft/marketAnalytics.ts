@@ -1,4 +1,3 @@
-
 // File: neural_ops/tools/nft/marketAnalytics.ts
 
 import { z } from 'zod';
@@ -40,17 +39,17 @@ export const nftMarketAnalyticsTool = {
         success: true,
         blockchain: entry.blockchain,
         insights: {
-          timeRange: time_range,
-          priceFloor: entry.price_floor_trend.at(-1),
-          priceCeiling: entry.price_ceiling_trend.at(-1),
-          volume: entry.volume_trend.at(-1),
-          avgPrice: entry.avg_price_trend.at(-1),
-          marketCap: entry.market_cap_trend.at(-1),
-          sales: entry.sales_count_trend.at(-1),
-          buyers: entry.unique_buyers_trend.at(-1),
-          sellers: entry.unique_sellers_trend.at(-1),
-          holders: entry.holders_trend.at(-1),
-        },
+  timeRange: time_range,
+  priceFloor: entry.price_floor_trend?.at(-1) ?? null,
+  priceCeiling: entry.price_ceiling_trend?.at(-1) ?? null,
+  volume: entry.volume_trend?.at(-1) ?? entry.volume ?? null,
+  avgPrice: entry.avg_price_trend?.at(-1) ?? null,
+  marketCap: entry.market_cap_trend?.at(-1) ?? null,
+  sales: entry.sales_count_trend?.at(-1) ?? entry.sales ?? null,
+  buyers: entry.unique_buyers_trend?.at(-1) ?? null,
+  sellers: entry.unique_sellers_trend?.at(-1) ?? null,
+  holders: entry.holders_trend?.at(-1) ?? null,
+},
       };
     } catch (error) {
       console.error('❌ Error in nftMarketAnalyticsTool:', error);
