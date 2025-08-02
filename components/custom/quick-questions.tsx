@@ -4,8 +4,6 @@ import { FC, useEffect, useState } from 'react';
 
 const allQuickQuestions = [
   'Explain my wallet risk score.',
-  'Any wallet risks?',
-  'Wallet score breakdown',
   'Is this NFT safe?',
   'Top Polygon NFT sales 24 hours',
   'Recent transactions',
