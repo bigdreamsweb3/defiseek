@@ -235,7 +235,13 @@ export const PreviewMessage = ({
                     )
 
                   case "nftMarketAnalyticsTool":
-                    return <NFTMarketAnalyticsTool result={result} toolCallId={toolCallId} />
+                    return (
+                      <NFTMarketAnalyticsTool
+                        key={toolCallId}
+                        result={result}
+                        toolCallId={toolCallId}
+                      />
+                    )
                   default:
                     return (
                       <div key={toolCallId} className="bg-card border rounded-lg p-3 shadow-sm">

@@ -11,7 +11,7 @@ import {
 } from "recharts"
 
 interface NFTMarketAnalyticsProps {
-    result: any // Ideally you should type this properly according to your data structure
+    result: any // You can refine this type later
     toolCallId: string
 }
 
