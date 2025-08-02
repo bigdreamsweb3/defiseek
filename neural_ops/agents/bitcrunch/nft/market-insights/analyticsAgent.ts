@@ -38,7 +38,6 @@ const NFTMarketAnalyticsSchema = z.object({
   message: z.string().optional(),
 });
 
-
 /**
  * Input parameters for the NFT Market Analytics agent
  */
@@ -48,35 +47,42 @@ const NFTMarketAnalyticsInputSchema = z.object({
 });
 
 export type NFTMarketAnalytics = z.infer<typeof NFTMarketAnalyticsSchema>;
-export type NFTMarketAnalyticsInput = z.infer<typeof NFTMarketAnalyticsInputSchema>;
+export type NFTMarketAnalyticsInput = z.infer<
+  typeof NFTMarketAnalyticsInputSchema
+>;
 
 /**
  * NFT Market Analytics Report Agent
  */
 const nftMarketAnalyticsAgent = ApiClient.define({
   id: 'nftMarketAnalyticsAgent',
-  description: 'Fetches NFT market analytics and trend data from UnleashNFTs bitsCrunch API',
+  description:
+    'Fetches NFT market analytics and trend data from UnleashNFTs bitsCrunch API',
   output: NFTMarketAnalyticsSchema,
 
-  
-async run(inputBlockchain: string, inputTimeRange: string = '24h'): Promise<NFTMarketAnalytics> {
-  const apiKey = process.env.UNLEASHNFTS_API_KEY;
+  async run(
+    inputBlockchain: string,
+    inputTimeRange: string = '24h'
+  ): Promise<NFTMarketAnalytics> {
+    const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
-  // ✅ Ensure API key is defined
-  if (!apiKey) {
-    throw new Error('❌ Missing UNLEASHNFTS_API_KEY environment variable');
-  }
+    // ✅ Ensure API key is defined
+    if (!apiKey) {
+      throw new Error('❌ Missing UNLEASHNFTS_API_KEY environment variable');
+    }
 
-  // Parse input and apply default values
-  const { blockchain, time_range } = NFTMarketAnalyticsInputSchema.parse({ 
-    blockchain: inputBlockchain, 
-    time_range: inputTimeRange 
-  });
+    // Parse input and apply default values
+    const { blockchain, time_range } = NFTMarketAnalyticsInputSchema.parse({
+      blockchain: inputBlockchain,
+      time_range: inputTimeRange,
+    });
     // Normalize inputs
     const normalizedBlockchain = blockchain.toLowerCase().trim();
     const normalizedTimeRange = time_range.toLowerCase().trim();
 
-    console.log(`🔍 Fetching NFT market analytics for ${normalizedBlockchain} (${normalizedTimeRange})...`);
+    console.log(
+      `🔍 Fetching NFT market analytics for ${normalizedBlockchain} (${normalizedTimeRange})...`
+    );
 
     try {
       const endpoint = `https://api.unleashnfts.com/api/v2/nft/market-insights/analytics?blockchain=${normalizedBlockchain}&time_range=${normalizedTimeRange}`;
@@ -93,7 +99,9 @@ async run(inputBlockchain: string, inputTimeRange: string = '24h'): Promise<NFTM
       });
 
       if (!response.ok) {
-        throw new Error(`UnleashNFTs API error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `UnleashNFTs API error: ${response.status} ${response.statusText}`
+        );
       }
 
       const data = await response.json();
@@ -102,7 +110,9 @@ async run(inputBlockchain: string, inputTimeRange: string = '24h'): Promise<NFTM
         throw new Error('Invalid response format from UnleashNFTs API');
       }
 
-      console.log(`✅ Successfully fetched NFT market analytics for ${normalizedBlockchain}`);
+      console.log(
+        `✅ Successfully fetched NFT market analytics for ${normalizedBlockchain}`
+      );
 
       return {
         data: data.data,
@@ -111,16 +121,14 @@ async run(inputBlockchain: string, inputTimeRange: string = '24h'): Promise<NFTM
       };
     } catch (error) {
       console.error('❌ Error fetching NFT market analytics:', error);
+
       return {
         data: [],
         success: false,
-        message: `Failed to fetch NFT market analytics: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
+        message: `Network error: ${(error instanceof Error && error.message) || 'Unknown error'}`,
       };
     }
   },
 });
 
 export default nftMarketAnalyticsAgent;
-        

@@ -101,14 +101,14 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
   const [showQuickQuestions, setShowQuickQuestions] = useState(false);
-  
-useEffect(() => {
-  if (messages.length === 0) {
-    const timeout = setTimeout(() => setShowQuickQuestions(true), 300);
-    return () => clearTimeout(timeout);
-  }
-}, [messages]);
-  
+
+  useEffect(() => {
+    if (messages.length === 0) {
+      const timeout = setTimeout(() => setShowQuickQuestions(true), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [messages]);
+
 
   return (
     <>
@@ -119,18 +119,18 @@ useEffect(() => {
           className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
         >
           {messages.length === 0 && (
-  <>
-    <Overview />
-    {showQuickQuestions && (
-      <QuickQuestions
-        onSelect={(q) => {
-          setInput(q);
-          handleSubmit(new Event('submit'));
-        }}
-      />
-    )}
-  </>
-)}
+            <>
+              <Overview />
+              {showQuickQuestions && (
+                <QuickQuestions
+                  onSelect={(q) => {
+                    setInput(q);
+                    handleSubmit(new Event('submit'));
+                  }}
+                />
+              )}
+            </>
+          )}
 
           {messages.map((message, index) => (
             <div
@@ -325,4 +325,4 @@ useEffect(() => {
       `}</style>
     </>
   );
-          }
+}
