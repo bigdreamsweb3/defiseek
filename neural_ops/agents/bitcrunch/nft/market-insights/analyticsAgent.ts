@@ -3,9 +3,6 @@
 import { z } from 'zod';
 import { ApiClient } from '../../../base/ApiClient';
 
-/**
- * Schema for NFT Market Analytics data structure
- */
 const NFTMarketAnalyticsSchema = z.object({
   data: z.array(
     z.object({
@@ -27,68 +24,49 @@ const NFTMarketAnalyticsSchema = z.object({
   message: z.string().optional(),
 });
 
-/**
- * Input parameters for the NFT Market Analytics agent
- */
 const NFTMarketAnalyticsInputSchema = z.object({
   blockchain: z.string().default('ethereum'),
   time_range: z.string().default('24h'),
 });
 
 export type NFTMarketAnalytics = z.infer<typeof NFTMarketAnalyticsSchema>;
-export type NFTMarketAnalyticsInput = z.infer<
-  typeof NFTMarketAnalyticsInputSchema
->;
+export type NFTMarketAnalyticsInput = z.infer<typeof NFTMarketAnalyticsInputSchema>;
 
-/**
- * NFT Market Analytics Report Agent
- */
 const nftMarketAnalyticsAgent = ApiClient.define({
   id: 'nftMarketAnalyticsAgent',
-  description:
-    'Fetches NFT market analytics and trend data from UnleashNFTs bitsCrunch API',
+  description: 'Fetches NFT market analytics and trend data from UnleashNFTs bitsCrunch API',
   output: NFTMarketAnalyticsSchema,
 
-  async run(
-    params?: Partial<NFTMarketAnalyticsInput>
-  ): Promise<NFTMarketAnalytics> {
+  async run(params?: Partial<NFTMarketAnalyticsInput>): Promise<NFTMarketAnalytics> {
     const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
-    // Parse input and apply default values
-    const { blockchain, time_range } = NFTMarketAnalyticsInputSchema.parse(
-      params ?? {}
-    );
-
-    // Normalize inputs
+    const { blockchain, time_range } = NFTMarketAnalyticsInputSchema.parse(params ?? {});
     const normalizedBlockchain = blockchain.toLowerCase().trim();
     const normalizedTimeRange = time_range.toLowerCase().trim();
 
-    console.log(
-      `🔍 Fetching NFT market analytics for ${normalizedBlockchain} (${normalizedTimeRange})...`
-    );
+    console.log(`🔍 Fetching NFT market analytics for ${normalizedBlockchain} (${normalizedTimeRange})...`);
 
     try {
-      const url = new URL(
-        'https://api.unleashnfts.com/api/v2/nft/market-insights/analytics'
-      );
-      url.searchParams.set('blockchain', normalizedBlockchain);
-      url.searchParams.set('time_range', normalizedTimeRange);
+      // ✅ Construct URL manually instead of using URLSearchParams
+      const url = `https://api.unleashnfts.com/api/v2/nft/market-insights/analytics?blockchain=${encodeURIComponent(
+        normalizedBlockchain
+      )}&time_range=${encodeURIComponent(normalizedTimeRange)}`;
+
+      console.log(`🌐 Full API URL: ${url}`);
 
       const headers: HeadersInit = {
-      accept: 'application/json',
-      'x-api-key': apiKey,
-      'Content-Type': 'application/json',
-    };
+        accept: 'application/json',
+        'x-api-key': apiKey,
+        'Content-Type': 'application/json',
+      };
 
-      const response = await fetch(url.toString(), {
+      const response = await fetch(url, {
         method: 'GET',
         headers,
       });
 
       if (!response.ok) {
-        throw new Error(
-          `UnleashNFTs API error: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`UnleashNFTs API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -97,9 +75,7 @@ const nftMarketAnalyticsAgent = ApiClient.define({
         throw new Error('Invalid response format from UnleashNFTs API');
       }
 
-      console.log(
-        `✅ Successfully fetched NFT market analytics for ${normalizedBlockchain}`
-      );
+      console.log(`✅ Successfully fetched NFT market analytics for ${normalizedBlockchain}`);
 
       return {
         data: data.data,
