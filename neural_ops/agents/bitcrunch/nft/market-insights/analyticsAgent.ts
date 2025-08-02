@@ -58,8 +58,7 @@ const nftMarketAnalyticsAgent = ApiClient.define({
   description: 'Fetches NFT market analytics and trend data from UnleashNFTs bitsCrunch API',
   output: NFTMarketAnalyticsSchema,
 
-  async run(blockchain: string, time_range: string = '24h'): Promise<NFTMarketAnalytics>  {
-    const apiKey = process.env.UNLEASHNFTS_API_KEY;
+  
 async run(inputBlockchain: string, inputTimeRange: string = '24h'): Promise<NFTMarketAnalytics> {
   const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
