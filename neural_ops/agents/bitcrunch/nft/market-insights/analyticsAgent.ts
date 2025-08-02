@@ -11,20 +11,33 @@ const NFTMarketAnalyticsSchema = z.object({
       block_dates: z.array(z.string()),
       blockchain: z.string(),
       chain_id: z.number(),
+
       price_ceiling_trend: z.array(z.number()),
       price_floor_trend: z.array(z.number()),
       volume_trend: z.array(z.number()),
-      sales_count_trend: z.array(z.number()),
-      holders_trend: z.array(z.number()),
-      unique_buyers_trend: z.array(z.number()),
-      unique_sellers_trend: z.array(z.number()),
-      avg_price_trend: z.array(z.number()),
-      market_cap_trend: z.array(z.number()),
+      sales_trend: z.array(z.number()).optional(),
+      transactions_trend: z.array(z.number()).optional(),
+      transfers_trend: z.array(z.number()).optional(),
+      avg_price_trend: z.array(z.number()).optional(),
+
+      unique_buyers_trend: z.array(z.number()).optional(),
+      unique_sellers_trend: z.array(z.number()).optional(),
+      sales_count_trend: z.array(z.number()).optional(),
+      holders_trend: z.array(z.number()).optional(),
+      market_cap_trend: z.array(z.number()).optional(),
+
+      // Flat summary fields (optional for now)
+      volume: z.number().optional(),
+      sales: z.number().optional(),
+      transactions: z.number().optional(),
+      transfers: z.number().optional(),
+      updated_at: z.string().optional(),
     })
   ),
   success: z.boolean(),
   message: z.string().optional(),
 });
+
 
 /**
  * Input parameters for the NFT Market Analytics agent
