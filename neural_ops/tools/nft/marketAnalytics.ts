@@ -23,7 +23,7 @@ export const nftMarketAnalyticsTool = {
     time_range?: string;
   }) => {
     try {
-      const result = await nftMarketAnalyticsAgent.run({ blockchain, time_range });
+      const result = await nftMarketAnalyticsAgent.execute({ blockchain, time_range });
 
       if (!result.success || !result.data.length) {
         return {
