@@ -39,7 +39,7 @@ export default function Page() {
       router.refresh();
       break;
     default:
-      toast.error('Unknown login state. Try again.');
+      '';
   }
   }, [state.status, router]);
 
