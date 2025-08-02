@@ -1,3 +1,4 @@
+
 // File: neural_ops/agents/bitcrunch/nft/market-insights/analyticsAgent.ts
 import { z } from 'zod';
 import { ApiClient } from '../../../base/ApiClient';
@@ -58,7 +59,7 @@ const nftMarketAnalyticsAgent = ApiClient.define({
   description: 'Fetches NFT market analytics and trend data from UnleashNFTs bitsCrunch API',
   output: NFTMarketAnalyticsSchema,
 
-  async run(params?: Partial<NFTMarketAnalyticsInput>): Promise<NFTMarketAnalytics> {
+  async run(blockchain: string, time_range: string = '24h'): Promise<NFTMarketAnalytics>  {
     const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
     // ✅ Ensure API key is defined
