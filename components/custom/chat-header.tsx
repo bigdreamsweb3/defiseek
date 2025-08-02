@@ -16,42 +16,45 @@ export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
 
   return (
     <header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2 w-full border-b border-border/50">
-      <div className="flex items-center gap-2 w-fit">
+      <div className="flex items-center gap-2 w-full">
         <SidebarToggle />
 
-        {(!open || windowWidth < 768) && (
-          <div className="flex items-center gap-2">
+        <div className='flex justify-between w-full md:w-fit gap-2'>
+          {(!open || windowWidth < 768) && (
+            <div className="flex items-center gap-2">
 
-            <Image
-              src="/images/defiseek_logo.png"
-              alt="DeFiSeek Logo"
-              width={24}
-              height={24}
-              className="w-6 h-6 cursor-pointer rounded-full"
-            />
+              <Image
+                src="/images/defiseek_logo.png"
+                alt="DeFiSeek Logo"
+                width={24}
+                height={24}
+                className="w-6 h-6 cursor-pointer rounded-full"
+              />
 
-            <span className="font-semibold text-sm block">
-              DeFiSeek
-            </span>
-          </div>
-        )}
+              <span className="font-semibold text-sm block">
+                DeFiSeek
+              </span>
+            </div>
+          )}
 
-        {/* {(!open || windowWidth < 768) && (
-          <div className="block">
-            <BetterTooltip content="New Chat">
-              <Button
-                variant="ghost"
-                className="order-2 md:order-1 px-3 py-2 md:px-2 md:py-1.5 h-9 md:h-fit ml-auto md:ml-0 bg-transparent"
-                onClick={() => {
-                  router.push('/');
-                  router.refresh();
-                }}
-              >
-                <PlusIcon />
-              </Button>
-            </BetterTooltip>
-          </div>
-        )} */}
+          {(!open || windowWidth < 768) && (
+            <div className="block">
+              <BetterTooltip content="New Chat" align="start">
+                <Button
+                  variant="ghost"
+                  className="p-2 h-fit"
+                  onClick={() => {
+                    router.push('/');
+                    router.refresh();
+                  }}
+                >
+                  <PlusIcon />
+                </Button>
+              </BetterTooltip>
+            </div>
+          )}
+
+        </div>
       </div>
     </header>
   );

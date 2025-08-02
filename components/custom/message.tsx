@@ -10,7 +10,7 @@ import { SparklesIcon } from "./icons"
 import { Markdown } from "./markdown"
 import { MessageActions } from "./message-actions"
 import { Skeleton } from "../ui/skeleton"
-import { NFTMarketAnalyticsTool } from "../NFTMarketAnalyticsTool"
+import { NFTMarketAnalyticsTool } from "../tools-ui/NFTMarketAnalyticsTool"
 
 export const PreviewMessage = ({
   chatId,

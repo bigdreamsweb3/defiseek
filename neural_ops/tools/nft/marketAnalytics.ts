@@ -3,6 +3,32 @@
 import { z } from 'zod';
 import nftMarketAnalyticsAgent from '@/neural_ops/agents/bitcrunch/nft/market-insights/analyticsAgent';
 
+interface NFTMarketEntry {
+  block_dates: string[];
+  blockchain: string;
+  chain_id: number;
+
+  price_ceiling_trend: number[];
+  price_floor_trend: number[];
+  volume_trend: number[];
+
+  sales_trend?: number[];
+  transactions_trend?: number[];
+  transfers_trend?: number[];
+
+  sales: number;
+  transactions: number;
+  transfers: number;
+  volume: number;
+
+  sales_change?: number;
+  transactions_change?: number;
+  transfers_change?: number;
+  volume_change?: number;
+
+  updated_at?: string;
+}
+
 export const nftMarketAnalyticsTool = {
   description: `Fetch recent NFT market trends like volume, floor price, buyers/sellers, and sales count on a specific blockchain.`,
 
@@ -39,22 +65,46 @@ export const nftMarketAnalyticsTool = {
         };
       }
 
-      const entry = result.data[0];
+      const entry = result.data[0] as NFTMarketEntry;
+
+      console.log('Market Insights:', entry);
 
       return {
         success: true,
         blockchain: entry.blockchain,
         insights: {
           timeRange: time_range,
-          priceFloor: entry.price_floor_trend?.at(-1) ?? null,
-          priceCeiling: entry.price_ceiling_trend?.at(-1) ?? null,
+
+          // 🧠 Trends and chart data
+          blockDates: entry.block_dates,
+          priceCeilingTrend: entry.price_ceiling_trend,
+          salesTrend: entry.sales_trend,
+          transactionsTrend: entry.transactions_trend,
+          transfersTrend: entry.transfers_trend,
+          volumeTrend: entry.volume_trend,
+
+          // 📈 Latest values
+          sales: entry.sales_trend?.at(-1) ?? entry.sales ?? null,
+          transactions:
+            entry.transactions_trend?.at(-1) ?? entry.transactions ?? null,
+          transfers: entry.transfers_trend?.at(-1) ?? entry.transfers ?? null,
           volume: entry.volume_trend?.at(-1) ?? entry.volume ?? null,
-          avgPrice: entry.avg_price_trend?.at(-1) ?? null,
-          marketCap: entry.market_cap_trend?.at(-1) ?? null,
-          sales: entry.sales_count_trend?.at(-1) ?? entry.sales ?? null,
-          buyers: entry.unique_buyers_trend?.at(-1) ?? null,
-          sellers: entry.unique_sellers_trend?.at(-1) ?? null,
-          holders: entry.holders_trend?.at(-1) ?? null,
+          priceCeiling: entry.price_ceiling_trend?.at(-1) ?? null,
+
+          // 🔁 Raw totals
+          totalSales: entry.sales ?? null,
+          totalTransactions: entry.transactions ?? null,
+          totalTransfers: entry.transfers ?? null,
+          totalVolume: entry.volume ?? null,
+
+          // 📊 % Changes
+          salesChange: entry.sales_change ?? null,
+          transactionsChange: entry.transactions_change ?? null,
+          transfersChange: entry.transfers_change ?? null,
+          volumeChange: entry.volume_change ?? null,
+
+          // 🕒 Last update
+          updatedAt: entry.updated_at,
         },
       };
     } catch (error) {

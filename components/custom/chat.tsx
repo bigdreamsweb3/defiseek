@@ -4,13 +4,12 @@ import { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { AnimatePresence } from 'framer-motion';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
 import { ChatHeader } from '@/components/custom/chat-header';
 import { PreviewMessage, ThinkingMessage } from '@/components/custom/message';
-import { useScrollToBottom } from '@/components/custom/use-scroll-to-bottom';
 import { Vote } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
 
@@ -18,9 +17,8 @@ import { Block, UIBlock } from './block';
 import { BlockStreamHandler } from './block-stream-handler';
 import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
-
 import { QuickQuestions } from '@/components/custom/quick-questions';
-
+import { useControlledScrollToBottom } from '../ui/control/improved-chat-scrolling';
 
 export function Chat({
   id,
@@ -60,11 +58,7 @@ export function Chat({
       ) as { chatId: string } | undefined;
 
       if (chatData?.chatId && pathname !== `/chat/${chatData.chatId}`) {
-        // Only navigate if we're starting a new chat from the home page
-        // Don't navigate if we're already in a chat or if the current chat ID matches
         if (pathname === '/' && id !== chatData.chatId) {
-          // Use router.replace instead of router.push to avoid adding to history
-          // and use a small delay to ensure the response is visible first
           setTimeout(() => {
             router.replace(`/chat/${chatData.chatId}`, { scroll: false });
           }, 100);
@@ -95,12 +89,34 @@ export function Chat({
     fetcher
   );
 
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+  const {
+    messagesContainerRef,
+    messagesEndRef,
+    scrollToBottom,
+    shouldAutoScroll,
+    isUserScrolling,
+    setShouldAutoScroll
+  } = useControlledScrollToBottom<HTMLDivElement>();
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-
   const [showQuickQuestions, setShowQuickQuestions] = useState(false);
+
+  // Auto-scroll only when appropriate
+  useEffect(() => {
+    if (messages.length > 0 && shouldAutoScroll && !isUserScrolling) {
+      // Small delay to ensure content is rendered
+      const timer = setTimeout(() => scrollToBottom(), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [messages, shouldAutoScroll, isUserScrolling, scrollToBottom]);
+
+  // Force scroll to bottom for new conversations
+  useEffect(() => {
+    if (messages.length === 1) {
+      scrollToBottom(true);
+      setShouldAutoScroll(true);
+    }
+  }, [messages.length, scrollToBottom, setShouldAutoScroll]);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -109,14 +125,13 @@ export function Chat({
     }
   }, [messages]);
 
-
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background overflow-hidden">
         <ChatHeader selectedModelId={selectedModelId} />
         <div
           ref={messagesContainerRef}
-          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
+          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 scroll-smooth"
         >
           {messages.length === 0 && (
             <>
@@ -168,6 +183,34 @@ export function Chat({
             className="shrink-0 min-w-[24px] min-h-[24px]"
           />
         </div>
+
+        {/* Scroll to bottom button - shows when user has scrolled up */}
+        {!shouldAutoScroll && (
+          <div className="absolute bottom-20 right-6 z-10">
+            <button
+              onClick={() => {
+                scrollToBottom(true);
+                setShouldAutoScroll(true);
+              }}
+              className="bg-background border border-border rounded-full p-2 shadow-lg hover:shadow-xl transition-all duration-200 hover:border-cyan-accent"
+              aria-label="Scroll to bottom"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m18 15-6-6-6 6" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl flex-shrink-0">
           <MultimodalInput
             chatId={id}
@@ -210,6 +253,11 @@ export function Chat({
 
       {/* Logo-themed styling with cyan accents */}
       <style jsx global>{`
+        /* Smooth scrolling */
+        .scroll-smooth {
+          scroll-behavior: smooth;
+        }
+        
         /* Responsive text breaking for crypto addresses */
         .message-content,
         .message-content * {
@@ -280,10 +328,7 @@ export function Chat({
         .hover-cyan:hover {
           border-color: rgba(0, 255, 255, 0.4);
           box-shadow: var(--defiseek-glow);
-      }
-
-      
-        
+        }
         
         /* Scrollbar styling */
         ::-webkit-scrollbar {

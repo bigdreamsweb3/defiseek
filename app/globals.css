@@ -141,4 +141,7 @@
   outline: none;
 }
 
-
+/* Ensure parents don't collapse and charts always have height */
+.recharts-wrapper {
+  min-width: 0 !important;
+}
