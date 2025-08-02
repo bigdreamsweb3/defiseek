@@ -1,4 +1,3 @@
-
 // File: neural_ops/agents/bitcrunch/nft/market-insights/analyticsAgent.ts
 import { z } from 'zod';
 import { ApiClient } from '../../../base/ApiClient';
@@ -61,15 +60,19 @@ const nftMarketAnalyticsAgent = ApiClient.define({
 
   async run(blockchain: string, time_range: string = '24h'): Promise<NFTMarketAnalytics>  {
     const apiKey = process.env.UNLEASHNFTS_API_KEY;
+async run(inputBlockchain: string, inputTimeRange: string = '24h'): Promise<NFTMarketAnalytics> {
+  const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
-    // ✅ Ensure API key is defined
-    if (!apiKey) {
-      throw new Error('❌ Missing UNLEASHNFTS_API_KEY environment variable');
-    }
+  // ✅ Ensure API key is defined
+  if (!apiKey) {
+    throw new Error('❌ Missing UNLEASHNFTS_API_KEY environment variable');
+  }
 
-    // Parse input and apply default values
-    const { blockchain, time_range } = NFTMarketAnalyticsInputSchema.parse(params ?? {});
-
+  // Parse input and apply default values
+  const { blockchain, time_range } = NFTMarketAnalyticsInputSchema.parse({ 
+    blockchain: inputBlockchain, 
+    time_range: inputTimeRange 
+  });
     // Normalize inputs
     const normalizedBlockchain = blockchain.toLowerCase().trim();
     const normalizedTimeRange = time_range.toLowerCase().trim();
