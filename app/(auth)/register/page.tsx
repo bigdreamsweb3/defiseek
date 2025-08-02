@@ -1,4 +1,4 @@
-            'use client';
+'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,6 +12,7 @@ import { register, RegisterActionState } from '../actions';
 
 export default function Page() {
   const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
 
@@ -23,23 +24,16 @@ export default function Page() {
   });
 
   useEffect(() => {
-    if (!state.status) return;
-
-    switch (state.status) {
-      case 'user_exists':
-        toast.error('Account already exists');
-        break;
-      case 'failed':
-        toast.error(state.error || 'Failed to create account');
-        break;
-      case 'invalid_data':
-        toast.error('Please fill all required fields!');
-        break;
-      case 'success':
-        toast.success('Account created successfully!');
-        setIsSuccessful(true);
-        router.refresh();
-        break;
+    if (state.status === 'user_exists') {
+      toast.error('Account already exists');
+    } else if (state.status === 'failed') {
+      toast.error(state.error || 'Failed to create account');
+    } else if (state.status === 'invalid_data') {
+      toast.error('Please fill in all required fields!');
+    } else if (state.status === 'success') {
+      toast.success('Account created successfully');
+      setIsSuccessful(true);
+      router.refresh();
     }
   }, [state, router]);
 
@@ -49,38 +43,37 @@ export default function Page() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 md:px-6">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-8 md:p-10 backdrop-blur-sm">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-3">
-            <Image
-              src="/logo.svg"
-              alt="DeFiSeek Logo"
-              width={48}
-              height={48}
-              priority
-              className="h-12 w-12 object-contain"
-            />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Create an Account
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Sign up with your email and password
+    <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
+      <div className="w-full max-w-md overflow-hidden rounded-2xl gap-12 flex flex-col">
+        <div className="flex flex-col items-center justify-center gap-3 px-4 text-center sm:px-16">
+          <Image
+            src="/logo.svg"
+            alt="DeFiSeek Logo"
+            width={48}
+            height={48}
+            className="mb-2"
+            priority
+          />
+          <h3 className="text-xl font-semibold text-cyan-600 dark:text-cyan-400">
+            Sign Up
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">
+            Create an account with your email and password
           </p>
         </div>
 
         <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful}>Sign up</SubmitButton>
+          <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
 
-          <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-6">
+          <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             Already have an account?{' '}
             <Link
               href="/login"
-              className="font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
+              className="font-semibold text-cyan-700 hover:underline dark:text-cyan-400"
             >
               Sign in
-            </Link>
+            </Link>{' '}
+            instead.
           </p>
         </AuthForm>
       </div>
