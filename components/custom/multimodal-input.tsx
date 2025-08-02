@@ -219,27 +219,14 @@ export function MultimodalInput({
         )}
       </AnimatePresence>
 
-      {isLoading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400"
-        >
-          <div className="flex gap-1">
-            <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-            <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-            <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce" />
-          </div>
-          {/* <span>DeFiSeek is analyzing...</span> */}
-        </motion.div>
-      )}
 
       <div
         className={cx(
           'relative flex items-end gap-2 p-2 rounded-2xl border transition-all duration-200',
           isFocused
-            ? 'border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/10 bg-white dark:bg-slate-900'
-            : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50',
+  ? 'border-cyan-500 dark:border-cyan-400 shadow-lg shadow-cyan-500/10 bg-white dark:bg-slate-900'
+  : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50',
+
           isLoading && 'border-orange-300 dark:border-orange-600'
         )}
       >
@@ -300,10 +287,11 @@ export function MultimodalInput({
             className={cx(
               'h-9 w-9 p-0 rounded-xl transition-all duration-200',
               isLoading
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : hasContent
-                  ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+  ? 'bg-red-500 hover:bg-red-600 text-white'
+  : hasContent
+    ? 'bg-cyan-500 hover:bg-cyan-600 text-white shadow-lg shadow-cyan-500/25'
+    : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+
             )}
             title={isLoading ? 'Stop generation' : 'Send message'}
           >
