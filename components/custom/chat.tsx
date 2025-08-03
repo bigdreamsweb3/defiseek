@@ -131,7 +131,7 @@ export function Chat({
         <ChatHeader selectedModelId={selectedModelId} />
         <div
           ref={messagesContainerRef}
-          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 scroll-smooth"
+          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4 pb-4 md:pb-6 scroll-smooth"
         >
           {messages.length === 0 && (
             <>
@@ -211,21 +211,23 @@ export function Chat({
           </div>
         )}
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl flex-shrink-0">
-          <MultimodalInput
-            chatId={id}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            stop={stop}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            messages={messages}
-            setMessages={setMessages}
-            append={append}
-          />
-        </form>
+        <div className="sticky bottom-0 bg-background border-t border-border/40 backdrop-blur-sm supports-[backdrop-filter]:bg-background/95">
+          <form className="flex mx-auto px-4 py-4 gap-2 w-full md:max-w-3xl">
+            <MultimodalInput
+              chatId={id}
+              input={input}
+              setInput={setInput}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+              stop={stop}
+              attachments={attachments}
+              setAttachments={setAttachments}
+              messages={messages}
+              setMessages={setMessages}
+              append={append}
+            />
+          </form>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -300,6 +302,62 @@ export function Chat({
           .h-dvh {
             height: 100vh;
             height: 100dvh;
+          }
+        }
+        
+        /* Mobile keyboard handling */
+        .mobile-input-container {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 50;
+          background: var(--background);
+          border-top: 1px solid var(--border);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+        
+        /* Ensure proper spacing for fixed input */
+        .messages-container-mobile {
+          padding-bottom: 120px;
+        }
+        
+        /* Mobile viewport units for better keyboard handling */
+        @supports (height: 100dvh) {
+          .h-dvh {
+            height: 100dvh;
+          }
+        }
+        
+        /* Prevent zoom on input focus on iOS */
+        @media screen and (max-width: 768px) {
+          input[type="text"],
+          input[type="email"],
+          input[type="password"],
+          textarea {
+            font-size: 16px;
+          }
+          
+          /* Ensure input container stays above keyboard */
+          .sticky {
+            position: -webkit-sticky;
+            position: sticky;
+          }
+          
+          /* Better mobile scrolling */
+          .overflow-y-scroll {
+            -webkit-overflow-scrolling: touch;
+          }
+          
+          /* Keyboard-aware positioning */
+          .keyboard-aware {
+            transform: translateY(0);
+            transition: transform 0.3s ease-in-out;
+          }
+          
+          .keyboard-visible .keyboard-aware {
+            transform: translateY(-env(keyboard-inset-height, 0));
           }
         }
         

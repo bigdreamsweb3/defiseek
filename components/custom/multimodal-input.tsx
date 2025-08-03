@@ -64,14 +64,60 @@ export function MultimodalInput({
   className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { width } = useWindowSize();
+  const { width, height } = useWindowSize();
   const [isFocused, setIsFocused] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [initialViewportHeight, setInitialViewportHeight] = useState(0);
 
   useEffect(() => {
     if (textareaRef.current) {
       adjustHeight();
     }
+    
+    // Store initial viewport height for mobile keyboard detection
+    if (typeof window !== 'undefined') {
+      setInitialViewportHeight(window.innerHeight);
+    }
   }, []);
+  
+  // Mobile keyboard detection
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleResize = () => {
+      const currentHeight = window.innerHeight;
+      const heightDifference = initialViewportHeight - currentHeight;
+      
+      // Consider keyboard visible if viewport shrunk by more than 150px
+      // This threshold works well for most mobile keyboards
+      const keyboardThreshold = 150;
+      const keyboardVisible = heightDifference > keyboardThreshold;
+      
+      setIsKeyboardVisible(keyboardVisible);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [initialViewportHeight]);
+  
+  // Handle focus events for mobile keyboard
+  const handleFocus = () => {
+    setIsFocused(true);
+    
+    // On mobile, scroll input into view when keyboard appears
+    if (width && width <= 768) {
+      setTimeout(() => {
+        textareaRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 300); // Delay to allow keyboard animation
+    }
+  };
+  
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
 
   const adjustHeight = () => {
     if (textareaRef.current) {
@@ -236,8 +282,8 @@ export function MultimodalInput({
             placeholder="Ask about DeFi, analyze contracts, check prices..."
             value={input}
             onChange={handleInput}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             className={cx(
               'min-h-[74px] max-h-[200px] overflow-hidden resize-none border-0 bg-transparent text-base placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-3',
               className

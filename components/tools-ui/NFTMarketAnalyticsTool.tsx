@@ -143,48 +143,50 @@ export const NFTMarketAnalyticsTool: React.FC<NFTMarketAnalyticsProps> = ({
                             </span>
                         </div>
 
-                        <div className="w-full bg-muted/30 rounded-lg p-2">
-                            <ResponsiveContainer width="100%" height={220}>
-                                <LineChart
-                                    data={activeConfig.data}
-                                    margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
-                                >
-                                    <XAxis
-                                        dataKey="time"
-                                        tick={{ fontSize: 10 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        className="text-muted-foreground"
-                                    />
-                                    <YAxis
-                                        tick={{ fontSize: 10 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        className="text-muted-foreground"
-                                    />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: 'hsl(var(--background))',
-                                            border: '1px solid hsl(var(--border))',
-                                            borderRadius: '6px',
-                                            fontSize: '11px'
-                                        }}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey={activeConfig.key}
-                                        stroke={activeConfig.color}
-                                        strokeWidth={2.5}
-                                        dot={false}
-                                        activeDot={{
-                                            r: 4,
-                                            fill: activeConfig.color,
-                                            stroke: 'hsl(var(--background))',
-                                            strokeWidth: 2
-                                        }}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                        <div className="w-full bg-muted/30 rounded-lg p-2 min-h-0">
+                            <div className="h-48 sm:h-52 md:h-56 lg:h-60">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart
+                                        data={activeConfig.data}
+                                        margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                                    >
+                                        <XAxis
+                                            dataKey="time"
+                                            tick={{ fontSize: 10 }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            className="text-muted-foreground"
+                                        />
+                                        <YAxis
+                                            tick={{ fontSize: 10 }}
+                                            axisLine={false}
+                                            tickLine={false}
+                                            className="text-muted-foreground"
+                                        />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'hsl(var(--background))',
+                                                border: '1px solid hsl(var(--border))',
+                                                borderRadius: '6px',
+                                                fontSize: '11px'
+                                            }}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey={activeConfig.key}
+                                            stroke={activeConfig.color}
+                                            strokeWidth={2.5}
+                                            dot={false}
+                                            activeDot={{
+                                                r: 4,
+                                                fill: activeConfig.color,
+                                                stroke: 'hsl(var(--background))',
+                                                strokeWidth: 2
+                                            }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
                 </>
