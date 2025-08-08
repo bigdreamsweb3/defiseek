@@ -29,13 +29,17 @@ type AllowedTools =
   | 'checkSupportedChains'
   | 'validateChain'
   | 'checkWalletScore'
-  | 'nftMarketAnalyticsTool';
+  | 'nftMarketAnalyticsTool'
+  | 'nftMetadataTool'
+  | 'nftCategoryTool';
 
 const allTools: AllowedTools[] = [
   'checkSupportedChains',
   'validateChain',
   'checkWalletScore',
   'nftMarketAnalyticsTool',
+  'nftMetadataTool',
+  'nftCategoryTool',
 ];
 
 export async function POST(request: Request) {
@@ -249,7 +253,7 @@ export async function POST(request: Request) {
     });
 
     console.log('✅ Returning stream response');
-    
+
     // Return normal stream response - we'll filter in frontend
     return result.toDataStreamResponse({
       data: streamingData,
@@ -305,4 +309,4 @@ export async function DELETE(request: Request) {
       status: 500,
     });
   }
-    }
+}

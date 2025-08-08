@@ -41,6 +41,8 @@ import { AgentRegistry } from './base/ApiClient';
 import supportedChainsAgent from './bitcrunch/supportedChainsAgent';
 import walletScoreAgent from './bitcrunch/wallet/walletScoreAgent';
 import nftMarketAnalyticsAgent from './bitcrunch/nft/market-insights/analyticsAgent';
+import nftMetadataAgent from './bitcrunch/nft/nftMetadataAgent';
+import nftCategoryAgent from './bitcrunch/nft/nftCategoryAgent';
 // import marketAnalyticsAgent from './bitcrunch/nft/marketAnalyticsAgent';
 // import tokenAnalysisAgent from './defi/tokenAnalysisAgent';
 
@@ -51,6 +53,8 @@ if (!isInitialized) {
   AgentRegistry.register(supportedChainsAgent);
   AgentRegistry.register(walletScoreAgent);
   AgentRegistry.register(nftMarketAnalyticsAgent);
+  AgentRegistry.register(nftMetadataAgent);
+  AgentRegistry.register(nftCategoryAgent);
   // AgentRegistry.register(marketAnalyticsAgent);
   // Uncomment when token analysis agent is ready
   // AgentRegistry.register(tokenAnalysisAgent);

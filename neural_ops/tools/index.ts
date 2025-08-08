@@ -2,7 +2,9 @@
 
 import { checkSupportedChains, validateChain } from './chains';
 import { checkWalletScore } from './wallets';
-import { nftMarketAnalyticsTool } from './nft/marketAnalytics'; // 👈 import the new tool
+import { nftMarketAnalyticsTool } from './nft/marketAnalytics';
+import { nftMetadataTool } from './nft/nftMetadata';
+import { nftCategoryTool } from './nft/nftCategory';
 
 export const tools = {
   // chain tools
@@ -13,7 +15,9 @@ export const tools = {
   checkWalletScore,
 
   // NFT tools
-  nftMarketAnalyticsTool, // 👈 export it here
+  nftMarketAnalyticsTool,
+  nftMetadataTool,
+  nftCategoryTool,
 
   // add more tools as needed
 };
