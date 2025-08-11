@@ -4,7 +4,7 @@
 import { convertToCoreMessages, Message, StreamData, streamText } from 'ai';
 
 import { customModel } from '@/neural_ops';
-import { models } from '@/neural_ops/models';
+import { models, FALLBACK_MODELS } from '@/neural_ops/models';
 import { systemPrompt } from '@/neural_ops/prompts';
 import { auth } from '@/app/(auth)/auth';
 import {
@@ -199,58 +199,90 @@ export async function POST(request: Request) {
       return new Response('Invalid model', { status: 400 });
     }
 
-    const result = await streamText({
-      model: customModel(model.apiIdentifier),
-      system: systemPrompt,
-      messages: validMessages,
-      maxSteps: 2,
-      experimental_activeTools: allTools,
-      tools: {
-        ...tools,
-      },
-      onFinish: async ({ responseMessages }) => {
-        try {
-          if (session.user && session.user.id) {
+    // Try primary model first, then fallback models
+    const modelsToTry = [model.apiIdentifier, ...FALLBACK_MODELS.filter(m => m !== model.apiIdentifier)];
+    let lastError: Error | null = null;
+    let result: any = null;
+
+    for (const modelId of modelsToTry) {
+      try {
+        console.log(`🤖 Attempting to use model: ${modelId}`);
+        
+        result = await streamText({
+          model: customModel(modelId),
+          system: systemPrompt,
+          messages: validMessages,
+          maxSteps: 2,
+          experimental_activeTools: allTools,
+          tools: {
+            ...tools,
+          },
+          maxRetries: 1, // Reduce retries per model to fail faster
+          onFinish: async ({ responseMessages }) => {
             try {
-              const responseMessagesWithoutIncompleteToolCalls =
-                sanitizeResponseMessages(responseMessages);
+              if (session.user && session.user.id) {
+                try {
+                  const responseMessagesWithoutIncompleteToolCalls =
+                    sanitizeResponseMessages(responseMessages);
 
-              if (responseMessagesWithoutIncompleteToolCalls.length > 0) {
-                await saveMessages({
-                  messages: responseMessagesWithoutIncompleteToolCalls.map(
-                    (message) => {
-                      const messageId = generateUUID();
+                  if (responseMessagesWithoutIncompleteToolCalls.length > 0) {
+                    await saveMessages({
+                      messages: responseMessagesWithoutIncompleteToolCalls.map(
+                        (message) => {
+                          const messageId = generateUUID();
 
-                      if (message.role === 'assistant') {
-                        streamingData.appendMessageAnnotation({
-                          messageIdFromServer: messageId,
-                        });
-                      }
+                          if (message.role === 'assistant') {
+                            streamingData.appendMessageAnnotation({
+                              messageIdFromServer: messageId,
+                            });
+                          }
 
-                      return {
-                        id: messageId,
-                        chatId: chatId,
-                        role: message.role,
-                        content: message.content,
-                        createdAt: new Date(),
-                      };
-                    }
-                  ),
-                });
+                          return {
+                            id: messageId,
+                            chatId: chatId,
+                            role: message.role,
+                            content: message.content,
+                            createdAt: new Date(),
+                          };
+                        }
+                      ),
+                    });
+                  }
+                } catch (error) {
+                  console.error('Failed to save chat:', error);
+                }
               }
-            } catch (error) {
-              console.error('Failed to save chat:', error);
+            } finally {
+              streamingData.close();
             }
-          }
-        } finally {
-          streamingData.close();
+          },
+          experimental_telemetry: {
+            isEnabled: true,
+            functionId: 'stream-text',
+          },
+        });
+
+        console.log(`✅ Successfully used model: ${modelId}`);
+        break; // Success! Exit the loop
+        
+      } catch (error) {
+        console.error(`❌ Model ${modelId} failed:`, error);
+        lastError = error as Error;
+        
+        // If this is the last model to try, we'll throw the error
+        if (modelId === modelsToTry[modelsToTry.length - 1]) {
+          throw error;
         }
-      },
-      experimental_telemetry: {
-        isEnabled: true,
-        functionId: 'stream-text',
-      },
-    });
+        
+        // Otherwise, continue to the next model
+        console.log(`🔄 Trying next fallback model...`);
+        continue;
+      }
+    }
+
+    if (!result) {
+      throw lastError || new Error('All models failed');
+    }
 
     console.log('✅ Returning stream response');
 
@@ -297,6 +329,10 @@ export async function DELETE(request: Request) {
   try {
     const chat = await getChatById({ id });
 
+    if (!chat) {
+      return new Response('Chat not found', { status: 404 });
+    }
+
     if (chat.userId !== session.user.id) {
       return new Response('Unauthorized', { status: 401 });
     }
@@ -305,6 +341,7 @@ export async function DELETE(request: Request) {
 
     return new Response('Chat deleted', { status: 200 });
   } catch (error) {
+    console.error('Error in DELETE /api/chat:', error);
     return new Response('An error occurred while processing your request', {
       status: 500,
     });

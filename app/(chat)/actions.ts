@@ -8,6 +8,28 @@ import { DEFAULT_MODEL_NAME } from '@/neural_ops/models';
 import { getChatsByUserId } from '@/db/queries';
 import { customModel } from '@/neural_ops';
 
+// Helper function to generate fallback titles when AI fails
+function generateFallbackTitle(messageText: string): string {
+  // Extract first meaningful words from the message
+  const words = messageText
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 2)
+    .slice(0, 6);
+  
+  if (words.length === 0) {
+    return 'New Chat';
+  }
+  
+  // Create title from keywords
+  const title = words
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+  
+  return title.slice(0, 50) + (title.length > 50 ? '...' : '');
+}
+
 export async function saveModelId(model: string) {
   const cookieStore = await cookies();
   cookieStore.set('model-id', model);
@@ -20,13 +42,18 @@ export async function generateTitleFromUserMessage({
   message: CoreUserMessage;
   userId: string;
 }) {
-  // Get existing chat titles for this user to avoid duplicates
-  const existingChats = await getChatsByUserId({ id: userId });
-  const existingTitles = existingChats.map(chat => chat.title.toLowerCase());
+  try {
+    // Get existing chat titles for this user to avoid duplicates
+    const existingChats = await getChatsByUserId({ id: userId });
+    const existingTitles = existingChats.map(chat => chat.title.toLowerCase());
 
-  const { text: baseTitle } = await generateText({
-    model: customModel(DEFAULT_MODEL_NAME),
-    system: `You are an expert at creating concise, descriptive, and unique chat titles for DeFi/Web3 conversations.
+    // Try to generate title with AI, with fallback
+    let baseTitle: string;
+    
+    try {
+      const result = await generateText({
+        model: customModel(DEFAULT_MODEL_NAME),
+        system: `You are an expert at creating concise, descriptive, and unique chat titles for DeFi/Web3 conversations.
 
 RULES:
 - Generate a short, descriptive title (max 60 characters)
@@ -45,8 +72,23 @@ EXAMPLES:
 - "yield farming guide?" → "DeFi Yield Farming Guide"
 
 Generate a unique, descriptive title for this message:`,
-    prompt: typeof message.content === 'string' ? message.content : JSON.stringify(message.content),
-  });
+        prompt: typeof message.content === 'string' ? message.content : JSON.stringify(message.content),
+        maxRetries: 2, // Reduce retries to fail faster
+        maxTokens: 100, // Limit tokens for title generation
+      });
+      
+      baseTitle = result.text;
+    } catch (aiError) {
+      console.error('Failed to generate title with AI, using fallback:', aiError);
+      
+      // Fallback: Generate title from message content
+      const messageText = typeof message.content === 'string' 
+        ? message.content 
+        : JSON.stringify(message.content);
+      
+      // Simple fallback title generation
+      baseTitle = generateFallbackTitle(messageText);
+    }
 
   // Clean and format the title
   let finalTitle = baseTitle.trim()
@@ -72,5 +114,10 @@ Generate a unique, descriptive title for this message:`,
     }
   }
 
-  return uniqueTitle;
+    return uniqueTitle;
+  } catch (error) {
+    console.error('Error in generateTitleFromUserMessage:', error);
+    // Ultimate fallback
+    return `New Chat ${new Date().toLocaleDateString()}`;
+  }
 }

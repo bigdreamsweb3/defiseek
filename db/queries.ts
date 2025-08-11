@@ -25,10 +25,18 @@ if (!process.env.POSTGRES_URL) {
 
 const client = postgres(process.env.POSTGRES_URL, {
   ssl: 'require',
-  max: 1,
-  // Neon recommended settings for serverless environments
-  idle_timeout: 20,
-  connect_timeout: 20,
+  max: 10, // Increased connection pool
+  // Improved timeout settings for better reliability
+  idle_timeout: 60,
+  connect_timeout: 60,
+  // Additional reliability settings
+  connection: {
+    application_name: 'defiseek-app',
+  },
+  // Retry configuration
+  max_lifetime: 60 * 30, // 30 minutes
+  // Better error handling
+  onnotice: () => {}, // Suppress notices
 });
 
 // const client = postgres({
@@ -109,8 +117,9 @@ export async function getChatsByUserId({ id }: { id: string }) {
       .where(eq(chat.userId, id))
       .orderBy(desc(chat.createdAt));
   } catch (error) {
-    console.error('Failed to get chats by user from database');
-    throw error;
+    console.error('Failed to get chats by user from database', error);
+    // Return empty array instead of throwing to prevent UI crashes
+    return [];
   }
 }
 
@@ -121,7 +130,8 @@ export async function getChatById({ id }: { id: string }) {
     return selectedChat;
   } catch (error) {
     console.error('Failed to get chat by id from database', error);
-    throw error;
+    // Return null instead of throwing to handle gracefully
+    return null;
   }
 }
 
@@ -143,7 +153,8 @@ export async function getMessagesByChatId({ id }: { id: string }) {
       .orderBy(asc(message.createdAt));
   } catch (error) {
     console.error('Failed to get messages by chat id from database', error);
-    throw error;
+    // Return empty array instead of throwing
+    return [];
   }
 }
 
@@ -185,7 +196,8 @@ export async function getVotesByChatId({ id }: { id: string }) {
     return await db.select().from(vote).where(eq(vote.chatId, id));
   } catch (error) {
     console.error('Failed to get votes by chat id from database', error);
-    throw error;
+    // Return empty array instead of throwing
+    return [];
   }
 }
 
