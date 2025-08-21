@@ -29,6 +29,7 @@ type AllowedTools =
   | 'checkSupportedChains'
   | 'validateChain'
   | 'checkWalletScore'
+  | 'checkWalletMetrics'
   | 'nftMarketAnalyticsTool'
   | 'nftMetadataTool'
   | 'nftCategoryTool';
@@ -37,6 +38,7 @@ const allTools: AllowedTools[] = [
   'checkSupportedChains',
   'validateChain',
   'checkWalletScore',
+  'checkWalletMetrics',
   'nftMarketAnalyticsTool',
   'nftMetadataTool',
   'nftCategoryTool',
@@ -200,14 +202,17 @@ export async function POST(request: Request) {
     }
 
     // Try primary model first, then fallback models
-    const modelsToTry = [model.apiIdentifier, ...FALLBACK_MODELS.filter(m => m !== model.apiIdentifier)];
+    const modelsToTry = [
+      model.apiIdentifier,
+      ...FALLBACK_MODELS.filter((m) => m !== model.apiIdentifier),
+    ];
     let lastError: Error | null = null;
     let result: any = null;
 
     for (const modelId of modelsToTry) {
       try {
         console.log(`🤖 Attempting to use model: ${modelId}`);
-        
+
         result = await streamText({
           model: customModel(modelId),
           system: systemPrompt,
@@ -264,16 +269,15 @@ export async function POST(request: Request) {
 
         console.log(`✅ Successfully used model: ${modelId}`);
         break; // Success! Exit the loop
-        
       } catch (error) {
         console.error(`❌ Model ${modelId} failed:`, error);
         lastError = error as Error;
-        
+
         // If this is the last model to try, we'll throw the error
         if (modelId === modelsToTry[modelsToTry.length - 1]) {
           throw error;
         }
-        
+
         // Otherwise, continue to the next model
         console.log(`🔄 Trying next fallback model...`);
         continue;

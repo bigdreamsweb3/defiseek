@@ -43,6 +43,7 @@ import walletScoreAgent from './bitcrunch/wallet/walletScoreAgent';
 import nftMarketAnalyticsAgent from './bitcrunch/nft/market-insights/analyticsAgent';
 import nftMetadataAgent from './bitcrunch/nft/nftMetadataAgent';
 import nftCategoryAgent from './bitcrunch/nft/nftCategoryAgent';
+import walletMetricsAgent from './bitcrunch/wallet/walletMetricsAgent';
 // import marketAnalyticsAgent from './bitcrunch/nft/marketAnalyticsAgent';
 // import tokenAnalysisAgent from './defi/tokenAnalysisAgent';
 
@@ -52,6 +53,7 @@ let isInitialized = false;
 if (!isInitialized) {
   AgentRegistry.register(supportedChainsAgent);
   AgentRegistry.register(walletScoreAgent);
+  AgentRegistry.register(walletMetricsAgent);
   AgentRegistry.register(nftMarketAnalyticsAgent);
   AgentRegistry.register(nftMetadataAgent);
   AgentRegistry.register(nftCategoryAgent);
