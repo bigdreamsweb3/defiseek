@@ -1,5 +1,5 @@
 'use client';
-import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
+import { ChevronDown, LogOut, Moon, Settings, Sun, User } from 'lucide-react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { SignOutButton, UserButton, useUser } from '@civic/auth/react';
@@ -67,7 +67,7 @@ export function SidebarUserNav() {
             sideOffset={8}
           >
             {/* User Info Section */}
-            <div className="px-3 py-2 border-b border-border/50 mb-2">
+            <div className="px-3 py-2 mb-2">
               <div className="flex items-center gap-3">
                 <Image
                   src={`https://avatar.vercel.sh/${user?.email ?? 'user'}`}
@@ -88,15 +88,15 @@ export function SidebarUserNav() {
             </div>
 
             {/* Menu Items */}
-            <DropdownMenuItem className="gap-3 px-3 py-2 cursor-pointer">
+            {/* <DropdownMenuItem className="gap-3 px-3 py-2 cursor-pointer">
               <User className="h-4 w-4" />
               <span>Profile</span>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
 
-            <DropdownMenuItem className="gap-3 px-3 py-2 cursor-pointer">
+            {/* <DropdownMenuItem className="gap-3 px-3 py-2 cursor-pointer">
               <Settings className="h-4 w-4" />
               <span>Settings</span>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
 
             <DropdownMenuSeparator />
 
@@ -108,28 +108,21 @@ export function SidebarUserNav() {
                 setTheme(theme === 'dark' ? 'light' : 'dark');
               }}
             >
-              <div className="h-4 w-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500" />
-              <span>{`Toggle ${theme === 'light' ? 'dark' : 'light'} mode`}</span>
+              {theme === 'light' ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <Sun className="h-4 w-4" />
+              )}
+              <span>{`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
             {/* Logout Section */}
-            {/* <div className="px-3 py-2">
-              <div className="w-full">
-                <UserButton />
-              </div>
-            </div> */}
-
-            {/* Alternative Logout Option */}
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem asChild>
-              <div className="flex items-center gap-3 w-full">
-                <LogOut className="h-4 w-4 text-red-600" />
-                <SignOutButton className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-transparent p-0" />
-              </div>
-            </DropdownMenuItem>
+            <div className="flex items-center gap-2 w-full p-2 cursor-pointer  rounded-lg">
+              <LogOut className="h-4 w-4 text-red-600" />
+              <SignOutButton className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-0 bg-transparent h-auto leading-none" />
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
