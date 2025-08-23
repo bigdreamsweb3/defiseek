@@ -1,9 +1,16 @@
-import NextAuth from "next-auth";
+import { authMiddleware } from '@civic/auth/nextjs/middleware';
 
-import { authConfig } from "@/app/(auth)/auth.config";
-
-export default NextAuth(authConfig).auth;
+export default authMiddleware();
 
 export const config = {
-  matcher: ["/", "/:id", "/api/:path*", "/login", "/register"],
+  // include the paths you wish to secure here
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next directory (Next.js static files)
+     * - favicon.ico, sitemap.xml, robots.txt
+     * - image files
+     */
+    '/((?!_next|favicon.ico|sitemap.xml|robots.txt|.*.jpg|.*.png|.*.svg|.*.gif).*)',
+  ],
 };

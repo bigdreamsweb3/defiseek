@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { BetterTooltip } from '@/components/ui/tooltip';
 import { useSidebar } from '@/components/ui/sidebar';
 import { SidebarLeftIcon } from './icons';
-import Image from 'next/image';
 
 export function SidebarToggle({
   className,
@@ -14,15 +13,14 @@ export function SidebarToggle({
   const { toggleSidebar, open } = useSidebar();
 
   return (
-    <BetterTooltip content="Toggle Sidebar" align="start">
+    <BetterTooltip content={open ? "Collapse Sidebar" : "Expand Sidebar"} align="start">
       <Button
         onClick={toggleSidebar}
         variant="ghost"
-        className="md:px-2 md:h-fit"
+        size="sm"
+        className="md:px-2 md:h-8 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
       >
-
-        <SidebarLeftIcon />
-
+        <SidebarLeftIcon className="h-4 w-4" />
       </Button>
     </BetterTooltip>
   );

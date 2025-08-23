@@ -3,7 +3,6 @@
 // import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { type User } from 'next-auth';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
@@ -36,7 +35,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Chat } from '@/db/schema';
 import { fetcher } from '@/lib/utils';
-
+import { UserButton } from '@civic/auth/react';
 
 
 import isToday from 'dayjs/plugin/isToday';
@@ -58,6 +57,8 @@ type GroupedChats = {
   lastMonth: Chat[];
   older: Chat[];
 };
+
+type UserLike = { email?: string | null } | undefined;
 
 const ChatItem = ({
   chat,
@@ -99,7 +100,7 @@ const ChatItem = ({
   </SidebarMenuItem>
 );
 
-export function SidebarHistory({ user }: { user: User | undefined }) {
+export function SidebarHistory({ user }: { user: UserLike }) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
   const pathname = usePathname();
@@ -118,6 +119,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const router = useRouter();
+  
   const handleDelete = async () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
       method: 'DELETE',
@@ -147,8 +149,21 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     return (
       <SidebarGroup>
         <SidebarGroupContent>
-          <div className="text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
-            <div>Login to save and revisit previous chats!</div>
+          <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-sidebar-accent flex items-center justify-center">
+              <svg className="w-6 h-6 text-sidebar-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div className="space-y-1">
+              <div className="font-medium text-sidebar-foreground">No conversations yet</div>
+              <div className="text-sm text-sidebar-foreground/60">
+                Login to save and revisit your previous chats
+              </div>
+            </div>
+            <div className="pt-2">
+              <UserButton />
+            </div>
           </div>
         </SidebarGroupContent>
       </SidebarGroup>

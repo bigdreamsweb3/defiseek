@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import type { User } from 'next-auth';
 import Image from 'next/image';
 import { PlusIcon } from '@/components/custom/icons';
 import { SidebarHistory } from '@/components/custom/sidebar-history';
@@ -19,7 +18,9 @@ import {
 } from '@/components/ui/sidebar';
 import { BetterTooltip } from '@/components/ui/tooltip';
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+interface UserLike { email?: string | null }
+
+export function AppSidebar({ user }: { user: UserLike | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
@@ -71,7 +72,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
         {user && (
           <SidebarGroup>
             <SidebarGroupContent>
-              <SidebarUserNav user={user} />
+              <SidebarUserNav />
             </SidebarGroupContent>
           </SidebarGroup>
         )}

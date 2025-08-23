@@ -72,6 +72,27 @@ export async function createUser(email: string, password: string) {
   }
 }
 
+// New function to create users with Civic Auth ID
+export async function createUserWithCivicAuthId(civicAuthId: string, email: string) {
+  try {
+    // Check if user already exists
+    const [existingUser] = await getUser(email);
+    if (existingUser) {
+      return existingUser;
+    }
+
+    // Create new user with Civic Auth ID
+    return await db.insert(user).values({ 
+      id: civicAuthId, // Use the Civic Auth ID directly
+      email, 
+      password: null // No password for Civic Auth users
+    }).returning();
+  } catch (error: any) {
+    console.error('Failed to create user with Civic Auth ID in database', error);
+    throw new Error(error?.message || 'Unknown error while creating user with Civic Auth ID');
+  }
+}
+
 export async function saveChat({
   id,
   userId,

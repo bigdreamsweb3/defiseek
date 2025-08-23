@@ -16,6 +16,8 @@
     "@ai-sdk/deepseek": "^0.2.16",
     "@ai-sdk/google": "^1.2.22",
     "@ai-sdk/openai": "1.0.0-canary.3",
+    "@civic/auth": "^0.9.5",
+    "@civic/auth-web3": "^0.7.2",
     "@lmstudio/sdk": "^1.4.0",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.2",

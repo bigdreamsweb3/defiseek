@@ -1,10 +1,9 @@
 "use server";
 
 import { z } from "zod";
+import { redirect } from "next/navigation";
 
-import { createUser, getUser } from "@/db/queries";
-
-import { signIn } from "./auth";
+import { createUser, getUser as getDbUser } from "@/db/queries";
 
 const authFormSchema = z.object({
   email: z.string().email(),
@@ -25,12 +24,17 @@ export const login = async (
       password: formData.get("password"),
     });
 
-    await signIn("credentials", {
-      email: validatedData.email,
-      password: validatedData.password,
-      redirect: false,
-    });
+    // Check if user exists in database
+    const [user] = await getDbUser(validatedData.email);
+    
+    if (!user) {
+      return { status: "failed" };
+    }
 
+    // For now, just validate the user exists
+    // Civic Auth will handle the actual authentication flow
+    // You may want to implement password verification here
+    
     return { status: "success" };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -62,18 +66,15 @@ export const register = async (
       password: formData.get("password"),
     });
 
-    let [user] = await getUser(validatedData.email);
+    let [user] = await getDbUser(validatedData.email);
 
     if (user) {
       return { status: "user_exists" };
     } else {
       await createUser(validatedData.email, validatedData.password);
-      await signIn("credentials", {
-        email: validatedData.email,
-        password: validatedData.password,
-        redirect: false,
-      });
-
+      
+      // After successful registration, redirect to login
+      // Civic Auth will handle the authentication flow
       return { status: "success" };
     }
   } catch (error) {

@@ -1,84 +1,78 @@
 
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-
-import { AuthForm } from '@/components/custom/auth-form';
-import { SubmitButton } from '@/components/custom/submit-button';
-import { login, LoginActionState } from '../actions';
+import Link from 'next/link';
+import { UserButton } from '@civic/auth/react';
 
 export default function Page() {
-  const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [isSuccessful, setIsSuccessful] = useState(false);
-
-  const [state, formAction] = useActionState<LoginActionState, FormData>(
-    login,
-    { status: 'idle' }
-  );
-
-  useEffect(() => {
-    if (!state?.status) return;
-
-    switch (state.status) {
-      case 'failed':
-        toast.error('Invalid credentials!');
-        break;
-      case 'invalid_data':
-        toast.error('Please fill in all required fields!');
-        break;
-      case 'success':
-        setIsSuccessful(true);
-        toast.success('Logged in!');
-        router.refresh();
-        break;
-    }
-  }, [state.status, router]);
-
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
-    formAction(formData);
-  };
-
   return (
-    <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
-        <div className="flex flex-col items-center justify-center gap-3 px-4 text-center sm:px-16">
-          <Image
-            src="/images/logo.svg"
-            alt="DeFiSeek Logo"
-            width={48}
-            height={48}
-            className="mb-2"
-            priority
-          />
-          <h3 className="text-xl font-semibold text-cyan-600 dark:text-cyan-400">
-            Sign In
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Use your email and password to sign in
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Card Container */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          {/* Header */}
+          <div className="px-8 pt-8 pb-6 text-center">
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/images/logo.svg"
+                alt="DeFiSeek Logo"
+                width={56}
+                height={56}
+                className="drop-shadow-sm"
+                priority
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              Welcome back
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
+              Continue to DeFiSeek
+            </p>
+          </div>
+
+          {/* Auth Section */}
+          <div className="px-8 pb-8">
+            <div className="space-y-4">
+              {/* Civic Auth Button */}
+              <div className="flex justify-center">
+                <UserButton />
+              </div>
+              
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white dark:bg-slate-800 px-2 text-slate-500 dark:text-slate-400">
+                    Secure Authentication
+                  </span>
+                </div>
+              </div>
+
+              {/* Info Text */}
+              <div className="text-center">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Powered by Civic Auth for enterprise-grade security
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <AuthForm action={handleSubmit} defaultEmail={email}>
-          <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
-
-          <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
-            {"Don't have an account? "}
+        {/* Footer Links */}
+        {/* <div className="mt-6 text-center">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Don't have an account?{' '}
             <Link
               href="/register"
-              className="font-semibold text-cyan-700 hover:underline dark:text-cyan-400"
+              className="font-medium text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition-colors"
             >
               Sign up
             </Link>
-            {' for free.'}
           </p>
-        </AuthForm>
+        </div> */}
       </div>
     </div>
   );
