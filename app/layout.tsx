@@ -4,7 +4,6 @@ import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/custom/theme-provider';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { CivicAuthProvider } from '@civic/auth/nextjs';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://defiseek.vercel.app'),
@@ -58,19 +57,17 @@ export default async function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <CivicAuthProvider>
-          <Providers>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <Toaster position="top-center" />
-              {children}
-            </ThemeProvider>
-          </Providers>
-        </CivicAuthProvider>
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Toaster position="top-center" />
+            {children}
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
