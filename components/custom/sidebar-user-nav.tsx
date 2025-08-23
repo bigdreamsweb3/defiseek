@@ -2,7 +2,7 @@
 import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { UserButton, useUser } from '@civic/auth/react';
+import { SignOutButton, UserButton, useUser } from '@civic/auth/react';
 
 import {
   DropdownMenu,
@@ -59,7 +59,7 @@ export function SidebarUserNav() {
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          
+
           <DropdownMenuContent
             side="top"
             align="end"
@@ -92,16 +92,16 @@ export function SidebarUserNav() {
               <User className="h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
-            
+
             <DropdownMenuItem className="gap-3 px-3 py-2 cursor-pointer">
               <Settings className="h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            
+
             {/* Theme Toggle */}
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="gap-3 px-3 py-2 cursor-pointer"
               onSelect={(e) => {
                 e.preventDefault();
@@ -113,25 +113,22 @@ export function SidebarUserNav() {
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            
+
             {/* Logout Section */}
-            <div className="px-3 py-2">
+            {/* <div className="px-3 py-2">
               <div className="w-full">
                 <UserButton />
               </div>
-            </div>
-            
+            </div> */}
+
             {/* Alternative Logout Option */}
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="gap-3 px-3 py-2 cursor-pointer text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/20"
-              onSelect={(e) => {
-                e.preventDefault();
-                window.location.href = '/logout';
-              }}
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Logout</span>
+
+            <DropdownMenuItem asChild>
+              <div className="flex items-center gap-3 w-full">
+                <LogOut className="h-4 w-4 text-red-600" />
+                <SignOutButton className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-transparent p-0" />
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

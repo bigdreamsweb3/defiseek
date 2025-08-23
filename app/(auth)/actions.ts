@@ -45,46 +45,4 @@ export const login = async (
   }
 };
 
-export interface RegisterActionState {
-  status:
-    | "idle"
-    | "in_progress"
-    | "success"
-    | "failed"
-    | "user_exists"
-    | "invalid_data";
-  error?: string;
-}
 
-export const register = async (
-  _: RegisterActionState,
-  formData: FormData,
-): Promise<RegisterActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get("email"),
-      password: formData.get("password"),
-    });
-
-    let [user] = await getDbUser(validatedData.email);
-
-    if (user) {
-      return { status: "user_exists" };
-    } else {
-      await createUser(validatedData.email, validatedData.password);
-      
-      // After successful registration, redirect to login
-      // Civic Auth will handle the authentication flow
-      return { status: "success" };
-    }
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "An unknown error occurred.";
-
-    if (error instanceof z.ZodError) {
-      return { status: "invalid_data", error: errorMessage };
-    }
-
-    return { status: "failed", error: errorMessage };
-  }
-};

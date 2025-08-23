@@ -1,11 +1,22 @@
 
 'use client';
 
+import { useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { UserButton } from '@civic/auth/react';
 
 export default function Page() {
+  // Capture redirectTo parameter and store it in a cookie
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectTo = urlParams.get('redirectTo');
+    
+    if (redirectTo) {
+      // Store the redirect destination in a cookie
+      document.cookie = `redirectTo=${redirectTo}; path=/; max-age=300; samesite=lax`;
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -24,10 +35,10 @@ export default function Page() {
               />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              Welcome back
+              Login or Create Account
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-sm">
-              Continue to DeFiSeek
+              Get started with DeFiSeek
             </p>
           </div>
 
