@@ -38,6 +38,8 @@ export const message = pgTable('Message', {
   role: varchar('role').notNull(),
   content: json('content').notNull(),
   createdAt: timestamp('createdAt').notNull(),
+  // Temporarily commented out until migration is run
+  metadata: json('metadata'),
 });
 
 export type Message = InferSelectModel<typeof message>;

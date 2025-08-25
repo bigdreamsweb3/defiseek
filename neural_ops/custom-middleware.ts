@@ -1,4 +1,4 @@
-// File: ./ai/custom-middleware.ts
+// File: ./neural_ops/custom-middleware.ts
 
 import { Experimental_LanguageModelV1Middleware } from 'ai';
 

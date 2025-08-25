@@ -29,7 +29,7 @@ export const walletScoreAgent = ApiClient.define({
   description: 'Fetches wallet score data from UnleashNFTs bitsCrunch API',
   output: WalletScoreSchema,
 
-  async run(address: string): Promise<WalletScore> {
+  async run(address: string): Promise<WalletScore & { uiComponent?: any }> {
     const apiKey = process.env.UNLEASHNFTS_API_KEY;
 
     if (!address) {
@@ -68,12 +68,161 @@ export const walletScoreAgent = ApiClient.define({
 
       console.log('🧾 Raw wallet score response:', walletScore);
 
-      return WalletScoreSchema.parse(walletScore);
+      const parsedScore = WalletScoreSchema.parse(walletScore);
+      
+      // Automatically include UI component data
+      const uiComponent = {
+        component: 'CheckWalletScoreTool',
+        props: {
+          result: {
+            success: true,
+            data: formatWalletScoreForUI(parsedScore)
+          },
+          toolCallId: `wallet-score-${address}`,
+          args: { address }
+        }
+      };
+      
+      console.log('🎨 WalletScoreAgent returning UI component:', uiComponent);
+      
+      return {
+        ...parsedScore,
+        uiComponent
+      };
     } catch (error) {
       console.error('❌ Error in walletScoreAgent:', error);
       throw new Error(`walletScoreAgent failed for address: ${address}`);
     }
   },
 });
+
+// Helper function to format wallet score for UI display
+export function formatWalletScoreForUI(walletScore: WalletScore) {
+  const { 
+    classification, 
+    wallet_score, 
+    risk_interaction_score, 
+    anomalous_pattern_score, 
+    smart_contract_interaction_score,
+    wallet_age_score,
+    volume_score,
+    frequency_score,
+    centralized_interaction_score,
+    staking_governance_interaction_score,
+    associated_token_score,
+    illicit,
+    blockchain_with_illicit,
+    blockchain_without_illicit
+  } = walletScore;
+  
+  // Get color classes for UI components
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-red-600';
+    if (score >= 60) return 'text-orange-500';
+    if (score >= 40) return 'text-yellow-500';
+    if (score >= 20) return 'text-blue-500';
+    return 'text-green-600';
+  };
+
+  const getClassificationColor = (score: number) => {
+    if (score >= 80) return 'text-red-600';
+    if (score >= 60) return 'text-orange-500';
+    if (score >= 40) return 'text-yellow-500';
+    if (score >= 20) return 'text-blue-500';
+    return 'text-green-600';
+  };
+
+  return {
+    // Main score display
+    walletScore: wallet_score,
+    classification: classification,
+    classificationColor: getClassificationColor(wallet_score),
+    
+    // Risk scores for UI grid
+    riskScores: {
+      walletAgeScore: wallet_age_score,
+      riskInteractionScore: risk_interaction_score,
+      frequencyScore: frequency_score,
+      centralizedInteraction: centralized_interaction_score,
+      smartContractInteractionScore: smart_contract_interaction_score,
+      volumeScore: volume_score
+    },
+    
+    // Additional data for UI
+    blockchainWithoutIllicit: blockchain_without_illicit,
+    illicitFlags: illicit,
+    
+    // Success status for UI
+    success: true,
+    
+    // Raw data for internal use
+    rawData: walletScore
+  };
+}
+
+// Helper function to format wallet score for chat display
+export function formatWalletScoreForChat(walletScore: WalletScore) {
+  const { classification, wallet_score, risk_interaction_score, anomalous_pattern_score, smart_contract_interaction_score } = walletScore;
+  
+  // Convert technical scores to user-friendly descriptions
+  const getRiskLevel = (score: number) => {
+    if (score >= 80) return 'Very High Risk';
+    if (score >= 60) return 'High Risk';
+    if (score >= 40) return 'Medium Risk';
+    if (score >= 20) return 'Low Risk';
+    return 'Very Low Risk';
+  };
+
+  const getInteractionRisk = (score: number) => {
+    if (score >= 80) return '🚨 Extremely High Risk';
+    if (score >= 60) return '⚠️ High Risk';
+    if (score >= 40) return '🔶 Medium Risk';
+    if (score >= 20) return '🟡 Low Risk';
+    return '🟢 Very Low Risk';
+  };
+
+  const getAnomalyLevel = (score: number) => {
+    if (score >= 80) return '🚨 Highly Suspicious';
+    if (score >= 60) return '⚠️ Suspicious';
+    if (score >= 40) return '🔶 Some Concerns';
+    if (score >= 20) return '🟡 Minor Concerns';
+    return '🟢 Normal Behavior';
+  };
+
+  return {
+    // User-friendly summary
+    summary: {
+      overallScore: wallet_score,
+      classification: classification,
+      riskLevel: getRiskLevel(wallet_score),
+      confidence: 'High' // Based on comprehensive data
+    },
+    
+    // Key risk factors in plain language
+    riskFactors: {
+      interactionRisk: getInteractionRisk(risk_interaction_score),
+      anomalyLevel: getAnomalyLevel(anomalous_pattern_score),
+      smartContractRisk: smart_contract_interaction_score < 10 ? '🟢 Low Risk' : '🔶 Moderate Risk'
+    },
+    
+    // Actionable insights
+    insights: {
+      primary: risk_interaction_score > 50 ? 
+        'This wallet has interacted with high-risk entities. Further investigation recommended.' :
+        'This wallet shows normal risk patterns for DeFi usage.',
+      secondary: anomalous_pattern_score > 50 ?
+        'Unusual transaction patterns detected. Monitor for suspicious activity.' :
+        'Transaction patterns appear normal and consistent.',
+      recommendation: wallet_score < 40 ? 
+        'Consider this wallet safe for interactions.' :
+        wallet_score < 60 ? 
+        'Exercise caution and verify before significant transactions.' :
+        'High risk - avoid interactions until further investigation.'
+    },
+    
+    // Raw data (for internal use only)
+    rawData: walletScore
+  };
+}
 
 export default walletScoreAgent;

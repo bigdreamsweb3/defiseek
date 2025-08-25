@@ -1,8 +1,7 @@
 // file: app/(chat)/api/chat/route.ts
-// Solution: Fix the tool schema and add better error handling
+// Solution: Filter the stream response to hide tool calls while keeping full streaming
 
 import { convertToCoreMessages, Message, StreamData, streamText } from 'ai';
-import { z } from 'zod'; // Add zod for better schema validation
 
 import { customModel } from '@/neural_ops';
 import { models, FALLBACK_MODELS } from '@/neural_ops/models';
@@ -23,12 +22,32 @@ import {
 
 import { generateTitleFromUserMessage } from '../../actions';
 import { estimatePromptTokens } from '@/neural_ops/utils/tokenCount';
+import { tools } from '@/neural_ops/tools';
 
 export const maxDuration = 60;
 
-type AllowedTools = 'aiRouter';
+type AllowedTools =
+  | 'checkSupportedChains'
+  | 'validateChain'
+  | 'checkWalletScore'
+  // | 'checkWalletMetrics'
+  | 'nftMarketAnalyticsTool'
+  | 'marketMetadataTool'
+  | 'nftMetadataTool'
+  | 'nftCategoryTool';
 
-const allTools: AllowedTools[] = ['aiRouter'];
+const allTools: AllowedTools[] = [
+  'checkSupportedChains',
+  'validateChain',
+  'checkWalletScore',
+  // 'checkWalletMetrics',
+  'nftMarketAnalyticsTool',
+  'marketMetadataTool',
+  'nftMetadataTool',
+  'nftCategoryTool',
+];
+
+
 
 export async function POST(request: Request) {
   console.log('🚀 API POST request received');
@@ -163,17 +182,17 @@ export async function POST(request: Request) {
   }
 
   // Save the user message
-  await saveMessages({
-    messages: [
-      {
-        ...userMessage,
-        id: generateUUID(),
-        createdAt: new Date(),
-        chatId: chatId,
-        metadata: null,
-      },
-    ],
-  });
+          await saveMessages({
+          messages: [
+            {
+              ...userMessage,
+              id: generateUUID(),
+              createdAt: new Date(),
+              chatId: chatId,
+              metadata: null,
+            },
+          ],
+        });
 
   const streamingData = new StreamData();
   streamingData.appendMessageAnnotation({
@@ -188,12 +207,67 @@ export async function POST(request: Request) {
       return new Response('Invalid model', { status: 400 });
     }
 
-    const userContent =
-      typeof userMessage.content === 'string'
-        ? userMessage.content
-        : JSON.stringify(userMessage.content);
-
+    // Always use the AI router for intelligent query handling
+    const userContent = typeof userMessage.content === 'string' 
+      ? userMessage.content 
+      : JSON.stringify(userMessage.content);
+    
     console.log('🧠 Using AI Router for intelligent query handling');
+    
+    try {
+      // Use the AI router to analyze and route the query
+      const aiRouterResult = await runAIRouter(userContent);
+      
+      if (aiRouterResult.error) {
+        console.error('AI Router error:', aiRouterResult.error);
+        // Fall back to regular model processing
+      } else {
+        console.log('✅ AI Router completed successfully');
+        
+        // Close the streaming data since we're not using it
+        streamingData.close();
+        
+        // Save the AI router response with UI components
+        const aiResponseMessage = {
+          id: generateUUID(),
+          chatId: chatId,
+          role: 'assistant' as const,
+          content: aiRouterResult.comprehensiveResponse,
+          createdAt: new Date(),
+          // Store UI components as metadata
+          metadata: aiRouterResult.uiComponents ? {
+            uiComponents: aiRouterResult.uiComponents
+          } : undefined,
+        };
+        
+        await saveMessages({
+          messages: [aiResponseMessage],
+        });
+        
+        // Return the AI router response with UI components
+        return new Response(
+          JSON.stringify({
+            id: aiResponseMessage.id,
+            content: aiRouterResult.comprehensiveResponse,
+            role: 'assistant',
+            timestamp: aiResponseMessage.createdAt,
+            uiComponents: aiRouterResult.uiComponents,
+            aiRouterData: {
+              routingDecision: aiRouterResult.routingDecision,
+              agentsExecuted: aiRouterResult.totalAgentsExecuted,
+              executionOrder: aiRouterResult.executionOrder,
+            }
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    } catch (aiRouterError) {
+      console.error('AI Router failed, falling back to regular processing:', aiRouterError);
+      // Continue with regular model processing
+    }
 
     // Try primary model first, then fallback models
     const modelsToTry = [
@@ -211,74 +285,12 @@ export async function POST(request: Request) {
           model: customModel(modelId),
           system: systemPrompt,
           messages: validMessages,
-          maxSteps: 5, // Allow multiple steps for tool usage
-          // Fix the tools configuration with proper Zod schema
+          maxSteps: 2,
+          experimental_activeTools: allTools,
           tools: {
-            aiRouter: {
-              description:
-                'Routes complex blockchain/DeFi queries to specialized modular agents and returns comprehensive analysis',
-              parameters: z.object({
-                query: z
-                  .string()
-                  .describe(
-                    "The user's blockchain/DeFi query to analyze and route to appropriate agents"
-                  ),
-              }),
-              execute: async ({ query }: { query: string }) => {
-                console.log('🔧 AI Router tool executing with query:', query);
-
-                try {
-                  // Call your AI Router
-                  const aiRouterResult = await runAIRouter(query);
-
-                  if (aiRouterResult.error) {
-                    console.error('❌ AI Router error:', aiRouterResult.error);
-                    return {
-                      success: false,
-                      error: aiRouterResult.error,
-                      fallbackResponse:
-                        aiRouterResult.fallbackResponse ||
-                        'I encountered an issue analyzing your query. Please try rephrasing your question.',
-                    };
-                  }
-
-                  console.log('✅ AI Router completed successfully');
-                  console.log(
-                    '📊 Agents executed:',
-                    aiRouterResult.totalAgentsExecuted
-                  );
-                  console.log(
-                    '🔄 Execution order:',
-                    aiRouterResult.executionOrder
-                  );
-
-                  // Return the comprehensive result back to the model
-                  return {
-                    success: true,
-                    comprehensiveResponse: aiRouterResult.comprehensiveResponse,
-                    routingDecision: aiRouterResult.routingDecision,
-                    agentResults: aiRouterResult.agentResults,
-                    executionOrder: aiRouterResult.executionOrder,
-                    totalAgentsExecuted: aiRouterResult.totalAgentsExecuted,
-                    uiComponents: aiRouterResult.uiComponents,
-                    timestamp: aiRouterResult.timestamp,
-                    modelUsed: aiRouterResult.modelUsed,
-                  };
-                } catch (error) {
-                  console.error('❌ Error in AI Router tool execution:', error);
-                  return {
-                    success: false,
-                    error: 'AI Router execution failed',
-                    details:
-                      error instanceof Error ? error.message : 'Unknown error',
-                    fallbackResponse:
-                      "I'm having trouble processing your request right now. Please try again or rephrase your question.",
-                  };
-                }
-              },
-            },
+            ...tools,
           },
-          maxRetries: 1,
+          maxRetries: 1, // Reduce retries per model to fail faster
           onFinish: async ({ responseMessages }) => {
             try {
               if (session.user && session.user.id) {
@@ -287,9 +299,8 @@ export async function POST(request: Request) {
                     sanitizeResponseMessages(responseMessages);
 
                   if (responseMessagesWithoutIncompleteToolCalls.length > 0) {
-                    // Process and save messages with UI components
-                    const processedMessages =
-                      responseMessagesWithoutIncompleteToolCalls.map(
+                    await saveMessages({
+                      messages: responseMessagesWithoutIncompleteToolCalls.map(
                         (message) => {
                           const messageId = generateUUID();
 
@@ -297,44 +308,19 @@ export async function POST(request: Request) {
                             streamingData.appendMessageAnnotation({
                               messageIdFromServer: messageId,
                             });
-
-                            // Check if the message contains AI Router results with UI components
-                            let metadata = null;
-                            if (
-                              message.content &&
-                              typeof message.content === 'string'
-                            ) {
-                              // Try to extract UI components from tool results if they exist
-                              try {
-                                // This would need to be implemented based on how your sanitizeResponseMessages works
-                                // and how tool results are embedded in the response
-                              } catch (e) {
-                                // Ignore parsing errors
-                              }
-                            }
-
-                            return {
-                              id: messageId,
-                              chatId: chatId,
-                              role: message.role,
-                              content: message.content,
-                              createdAt: new Date(),
-                              metadata,
-                            };
                           }
 
-                          return {
-                            id: messageId,
-                            chatId: chatId,
-                            role: message.role,
-                            content: message.content,
-                            createdAt: new Date(),
-                            metadata: null,
-                          };
+                                                     return {
+                             id: messageId,
+                             chatId: chatId,
+                             role: message.role,
+                             content: message.content,
+                             createdAt: new Date(),
+                             metadata: null,
+                           };
                         }
-                      );
-
-                    await saveMessages({ messages: processedMessages });
+                      ),
+                    });
                   }
                 } catch (error) {
                   console.error('Failed to save chat:', error);
@@ -346,7 +332,7 @@ export async function POST(request: Request) {
           },
           experimental_telemetry: {
             isEnabled: true,
-            functionId: 'stream-text-with-ai-router',
+            functionId: 'stream-text',
           },
         });
 
@@ -371,9 +357,9 @@ export async function POST(request: Request) {
       throw lastError || new Error('All models failed');
     }
 
-    console.log('✅ Returning stream response with AI Router integration');
+    console.log('✅ Returning stream response');
 
-    // Return the stream response - the AI Router results will be part of the stream
+    // Return normal stream response - we'll filter in frontend
     return result.toDataStreamResponse({
       data: streamingData,
     });
@@ -390,7 +376,6 @@ export async function POST(request: Request) {
       JSON.stringify({
         error: 'An error occurred while processing your request',
         details: error instanceof Error ? error.message : 'Unknown error',
-        type: error instanceof Error ? error.constructor.name : 'UnknownError',
       }),
       {
         status: 500,

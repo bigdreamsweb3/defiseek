@@ -114,11 +114,25 @@ export const CheckWalletScoreTool: React.FC<CheckWalletScoreToolProps> = ({
 
 
             ) : (
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <p className="text-sm text-muted-foreground">
-                        {result.message || "Could not retrieve score"}
-                    </p>
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <p className="text-sm text-muted-foreground">
+                            {result.data?.error || result.message || "Could not retrieve score"}
+                        </p>
+                    </div>
+                    
+                    {result.data?.details && (
+                        <div className="text-xs text-muted-foreground bg-muted rounded-md p-2">
+                            {result.data.details}
+                        </div>
+                    )}
+                    
+                    {result.data?.retry && (
+                        <div className="text-xs text-blue-600 dark:text-blue-400">
+                            💡 Try again in a few minutes
+                        </div>
+                    )}
                 </div>
             )}
         </div>

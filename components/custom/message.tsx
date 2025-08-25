@@ -1,6 +1,14 @@
 'use client';
 
-import type { Message } from 'ai';
+import type { Message as AIMessage } from 'ai';
+import type { Message as DBMessage } from '@/db/schema';
+
+// Combined message type that includes both AI and database properties
+type Message = AIMessage & {
+  metadata?: {
+    uiComponents?: any;
+  };
+};
 import cx from 'classnames';
 import { motion } from 'framer-motion';
 import type { Dispatch, SetStateAction } from 'react';
@@ -14,6 +22,73 @@ import { NFTMarketAnalyticsTool } from '../tools-ui/NFTMarketAnalyticsTool';
 import { CheckWalletScoreTool } from '../tools-ui/CheckWalletScoreTool';
 import { NFTMetadataTool } from '../tools-ui/NFTMetadataTool';
 import { NFTCategoryTool } from '../tools-ui/NFTCategoryTool';
+import { WalletMetricsTool } from '../tools-ui/WalletMetricsTool';
+
+// Helper function to render UI components
+const renderUIComponent = (uiComponent: any, key: string) => {
+  const { component, props } = uiComponent;
+  
+  switch (component) {
+    case 'CheckWalletScoreTool':
+      return (
+        <CheckWalletScoreTool
+          key={key}
+          result={props.result}
+          toolCallId={props.toolCallId}
+          args={props.args}
+        />
+      );
+      
+    case 'WalletMetricsTool':
+      return (
+        <WalletMetricsTool
+          key={key}
+          result={props.result}
+          toolCallId={props.toolCallId}
+          args={props.args}
+        />
+      );
+      
+    case 'NFTMarketAnalyticsTool':
+      return (
+        <NFTMarketAnalyticsTool
+          key={key}
+          result={props.result}
+          toolCallId={props.toolCallId}
+        />
+      );
+      
+    case 'NFTMetadataTool':
+      return (
+        <NFTMetadataTool
+          key={key}
+          result={props.result}
+          toolCallId={props.toolCallId}
+        />
+      );
+      
+    case 'NFTCategoryTool':
+      return (
+        <NFTCategoryTool
+          key={key}
+          result={props.result}
+          toolCallId={props.toolCallId}
+        />
+      );
+      
+    default:
+      return (
+        <div key={key} className="bg-card border rounded-lg p-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+            <p className="text-xs text-muted-foreground font-medium">
+              UI Component: {component}
+            </p>
+          </div>
+        </div>
+      );
+  }
+};
 
 export const PreviewMessage = ({
   chatId,
@@ -63,6 +138,34 @@ export const PreviewMessage = ({
             {message.content && (
               <div className="flex flex-col gap-4">
                 <Markdown>{message.content as string}</Markdown>
+              </div>
+            )}
+
+            {/* Render UI Components from message metadata */}
+            {message.metadata?.uiComponents && (
+              <div className="flex flex-col gap-3">
+                {Object.entries(message.metadata.uiComponents).map(([key, uiComponent]: [string, any]) => {
+                  // Handle nested UI components (like walletMetrics per blockchain)
+                  if (typeof uiComponent === 'object' && uiComponent.component) {
+                    return renderUIComponent(uiComponent, key);
+                  }
+                  
+                  // Handle grouped UI components (like multiple blockchain metrics)
+                  if (typeof uiComponent === 'object' && !uiComponent.component) {
+                    return (
+                      <div key={key} className="flex flex-col gap-3">
+                        <h4 className="font-medium text-foreground capitalize">{key}</h4>
+                        {Object.entries(uiComponent).map(([subKey, subComponent]: [string, any]) => (
+                          <div key={subKey}>
+                            {renderUIComponent(subComponent, `${key}-${subKey}`)}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  
+                  return null;
+                })}
               </div>
             )}
 

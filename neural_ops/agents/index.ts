@@ -11,6 +11,10 @@ export {
   type AgentConfig,
 } from './base/ApiClient';
 
+// AI Decision-Making Agents
+export { default as runAIRouter } from './ai/aiRouterAgent';
+export { default as runWalletAnalysis } from './ai/walletAnalysisAgent';
+
 // bitsCrunch Blockchain Intelligence Agents
 export { default as supportedChainsAgent } from './bitcrunch/supportedChainsAgent';
 export type {
@@ -43,7 +47,7 @@ import walletScoreAgent from './bitcrunch/wallet/walletScoreAgent';
 import nftMarketAnalyticsAgent from './bitcrunch/nft/market-insights/analyticsAgent';
 import nftMetadataAgent from './bitcrunch/nft/nftMetadataAgent';
 import nftCategoryAgent from './bitcrunch/nft/nftCategoryAgent';
-import walletMetricsAgent from './bitcrunch/wallet/walletMetricsAgent';
+// import walletMetricsAgent from './bitcrunch/wallet/walletMetricsAgent';
 // import marketAnalyticsAgent from './bitcrunch/nft/marketAnalyticsAgent';
 // import tokenAnalysisAgent from './defi/tokenAnalysisAgent';
 
@@ -53,7 +57,7 @@ let isInitialized = false;
 if (!isInitialized) {
   AgentRegistry.register(supportedChainsAgent);
   AgentRegistry.register(walletScoreAgent);
-  AgentRegistry.register(walletMetricsAgent);
+  // AgentRegistry.register(walletMetricsAgent);
   AgentRegistry.register(nftMarketAnalyticsAgent);
   AgentRegistry.register(nftMetadataAgent);
   AgentRegistry.register(nftCategoryAgent);
@@ -69,5 +73,8 @@ if (!isInitialized) {
         .map((a) => a.id)
         .join(', ')}`
     );
+    // console.log('🧠 AI Decision-Making System: Active');
+    // console.log('  - AI Router Agent: Ready');
+    // console.log('  - Wallet Analysis Agent: Ready');
   }
 }

@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import walletScoreAgent from '../agents/bitcrunch/wallet/walletScoreAgent';
-import walletMetricsAgent from '../agents/bitcrunch/wallet/walletMetricsAgent';
+// import walletMetricsAgent from '../agents/bitcrunch/wallet/walletMetricsAgent';
 
 const extractAddress = (input: string): string => {
   const matches = input.match(/0x[a-fA-F0-9]{40}/g);
@@ -70,82 +70,82 @@ export type CheckWalletScoreOutput = Awaited<
 >;
 
 // ✅ New tool for wallet metrics
-export const checkWalletMetrics = {
-  description: `Retrieve detailed wallet metrics including balances, inflows/outflows, transactions, token count, and volumes for a given blockchain.`,
+// export const checkWalletMetrics = {
+//   description: `Retrieve detailed wallet metrics including balances, inflows/outflows, transactions, token count, and volumes for a given blockchain.`,
 
-  parameters: z.object({
-    address: z.string().describe('The wallet address you want to analyze.'),
-    blockchain: z
-      .string()
-      .describe('The blockchain to query (e.g. ethereum, polygon, bsc).'),
-  }),
+//   parameters: z.object({
+//     address: z.string().describe('The wallet address you want to analyze.'),
+//     blockchain: z
+//       .string()
+//       .describe('The blockchain to query (e.g. ethereum, polygon, bsc).'),
+//   }),
 
-  execute: async ({
-    address,
-    blockchain,
-  }: {
-    address: string;
-    blockchain: string;
-  }) => {
-    try {
-      const cleanAddress = extractAddress(address);
-      const result = await walletMetricsAgent.execute({
-        blockchain,
-        wallet: cleanAddress,
-      });
+//   execute: async ({
+//     address,
+//     blockchain,
+//   }: {
+//     address: string;
+//     blockchain: string;
+//   }) => {
+//     try {
+//       const cleanAddress = extractAddress(address);
+//       const result = await walletMetricsAgent.execute({
+//         blockchain,
+//         wallet: cleanAddress,
+//       });
 
-      return {
-        success: true,
-        walletAddress: cleanAddress,
-        blockchain,
-        data: {
-          balances: {
-            eth: result.balance_eth,
-            usd: result.balance_usd,
-          },
-          activity: {
-            firstActive: result.first_active_day,
-            lastActive: result.last_active_day,
-            activeDays: result.wallet_active_days,
-            walletAge: result.wallet_age,
-          },
-          transactions: {
-            total: result.total_txn,
-            inbound: result.in_txn,
-            outbound: result.out_txn,
-          },
-          flows: {
-            inflowAddresses: result.inflow_addresses,
-            inflowEth: result.inflow_amount_eth,
-            inflowUsd: result.inflow_amount_usd,
-            outflowAddresses: result.outflow_addresses,
-            outflowEth: result.outflow_amount_eth,
-            outflowUsd: result.outflow_amount_usd,
-          },
-          volumes: {
-            totalEth: result.volume_eth,
-            totalUsd: result.volume_usd,
-            illicit: result.illicit_volume,
-            mixer: result.mixer_volume,
-            sanction: result.sanction_volume,
-          },
-          tokensHeld: result.token_cnt,
-        },
-      };
-    } catch (error) {
-      console.error('❌ Error in checkWalletMetrics tool:', error);
+//       return {
+//         success: true,
+//         walletAddress: cleanAddress,
+//         blockchain,
+//         data: {
+//           balances: {
+//             eth: result.balance_eth,
+//             usd: result.balance_usd,
+//           },
+//           activity: {
+//             firstActive: result.first_active_day,
+//             lastActive: result.last_active_day,
+//             activeDays: result.wallet_active_days,
+//             walletAge: result.wallet_age,
+//           },
+//           transactions: {
+//             total: result.total_txn,
+//             inbound: result.in_txn,
+//             outbound: result.out_txn,
+//           },
+//           flows: {
+//             inflowAddresses: result.inflow_addresses,
+//             inflowEth: result.inflow_amount_eth,
+//             inflowUsd: result.inflow_amount_usd,
+//             outflowAddresses: result.outflow_addresses,
+//             outflowEth: result.outflow_amount_eth,
+//             outflowUsd: result.outflow_amount_usd,
+//           },
+//           volumes: {
+//             totalEth: result.volume_eth,
+//             totalUsd: result.volume_usd,
+//             illicit: result.illicit_volume,
+//             mixer: result.mixer_volume,
+//             sanction: result.sanction_volume,
+//           },
+//           tokensHeld: result.token_cnt,
+//         },
+//       };
+//     } catch (error) {
+//       console.error('❌ Error in checkWalletMetrics tool:', error);
 
-      return {
-        success: false,
-        walletAddress: address,
-        blockchain,
-        errorType: 'data_unavailable',
-        message: 'Could not retrieve wallet metrics',
-      };
-    }
-  },
-};
+//       return {
+//         success: false,
+//         walletAddress: address,
+//         blockchain,
+//         errorType: 'data_unavailable',
+//         message: 'Could not retrieve wallet metrics',
+//       };
+//     }
+//   },
+// };
 
-export type CheckWalletMetricsOutput = Awaited<
-  ReturnType<(typeof checkWalletMetrics)['execute']>
->;
+// export type CheckWalletMetricsOutput = Awaited<
+//   ReturnType<(typeof checkWalletMetrics)['execute']>
+// >;
