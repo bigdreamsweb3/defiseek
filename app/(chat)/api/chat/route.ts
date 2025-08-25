@@ -26,9 +26,27 @@ import { estimatePromptTokens } from '@/neural_ops/utils/tokenCount';
 
 export const maxDuration = 60;
 
-type AllowedTools = 'aiRouter';
+// type AllowedTools = 'aiRouter';
+// type AllowedTools =
+//   | 'checkSupportedChains'
+//   | 'validateChain'
+//   | 'checkWalletScore'
+//   // | 'checkWalletMetrics'
+//   | 'nftMarketAnalyticsTool'
+//   | 'marketMetadataTool'
+//   | 'nftMetadataTool'
+//   | 'nftCategoryTool';
 
-const allTools: AllowedTools[] = ['aiRouter'];
+// const allTools: AllowedTools[] = [
+//   'checkSupportedChains',
+//   'validateChain',
+//   'checkWalletScore',
+//   // 'checkWalletMetrics',
+//   'nftMarketAnalyticsTool',
+//   'marketMetadataTool',
+//   'nftMetadataTool',
+//   'nftCategoryTool',
+// ];
 
 export async function POST(request: Request) {
   console.log('🚀 API POST request received');
