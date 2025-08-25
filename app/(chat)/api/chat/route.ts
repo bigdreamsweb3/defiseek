@@ -285,8 +285,6 @@ export async function POST(request: Request) {
                     agentResults: aiRouterResult.agentResults,
                     executionOrder: aiRouterResult.executionOrder,
                     totalAgentsExecuted: aiRouterResult.totalAgentsExecuted,
-                    uiComponents:
-                      aiRouterResult.agentResults?.uiComponents || [],
                     timestamp: aiRouterResult.timestamp,
                     modelUsed: aiRouterResult.modelUsed,
                   };
@@ -341,20 +339,26 @@ export async function POST(request: Request) {
                                   (invocation: { result: any }) =>
                                     invocation.result
                                 );
-
-                              // Look for UI components in tool results
-                              const uiComponents = toolResults
-                                .filter(
-                                  (result: { uiComponents?: any }) =>
-                                    result && result.uiComponents
-                                )
-                                .flatMap(
-                                  (result: { uiComponents: any[] }) =>
-                                    result.uiComponents
+                              
+                              // Process tool results to extract UI components and agent data
+                              if (toolResults && toolResults.length > 0) {
+                                const aiRouterResult = toolResults.find(
+                                  (result: any) => 
+                                    result && 
+                                    result.success && 
+                                    (result.routingDecision || result.agentResults)
                                 );
-
-                              if (uiComponents.length > 0) {
-                                metadata = { uiComponents };
+                                
+                                if (aiRouterResult) {
+                                  metadata = {
+                                    agentData: {
+                                      routingDecision: aiRouterResult.routingDecision,
+                                      agentResults: aiRouterResult.agentResults,
+                                      executionOrder: aiRouterResult.executionOrder,
+                                      totalAgentsExecuted: aiRouterResult.totalAgentsExecuted
+                                    }
+                                  };
+                                }
                               }
                             }
 
