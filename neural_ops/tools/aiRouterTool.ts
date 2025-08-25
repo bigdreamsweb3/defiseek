@@ -24,7 +24,6 @@ export const aiRouterTool = {
           routingDecision: result.routingDecision,
           agentsExecuted: result.totalAgentsExecuted,
           executionOrder: result.executionOrder,
-          uiComponents: result.uiComponents ?? null,
         };
       } catch (err: any) {
         console.error('Error in AI Router tool:', err);
