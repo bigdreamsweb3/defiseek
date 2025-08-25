@@ -90,17 +90,14 @@ export async function runAIRouter(query: string) {
     const summaryResponse = await generateText({
       model: customModel(model),
       system: AI_COORDINATOR_SYSTEM,
-      prompt: createAICoordinatorPrompt(query, routingDecision, agentResults, executionOrder),
+      prompt: createAICoordinatorPrompt(
+        query,
+        routingDecision,
+        agentResults,
+        executionOrder
+      ),
       temperature: 0.3,
     });
-
-    // Step 5: Collect UI components
-    const uiComponents: any = {};
-    for (const [agentName, result] of Object.entries(agentResults)) {
-      if (result && typeof result === 'object' && 'uiComponents' in result && result.uiComponents) {
-        uiComponents[agentName] = result.uiComponents;
-      }
-    }
 
     // Step 6: Return results optimized for streaming
     return {
@@ -110,7 +107,6 @@ export async function runAIRouter(query: string) {
       agentResults,
       executionOrder,
       comprehensiveResponse: summaryResponse.text,
-      uiComponents: Object.keys(uiComponents).length > 0 ? uiComponents : undefined,
       timestamp: new Date().toISOString(),
       modelUsed: model,
       totalAgentsExecuted: executionOrder.length,

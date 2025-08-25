@@ -197,7 +197,6 @@ export async function POST(request: Request) {
   streamingData.appendMessageAnnotation({
     chatId: chatId,
   });
-
   try {
     const tokenCount = estimatePromptTokens(systemPrompt, messages);
     console.log(`🔢 Total token count: ${tokenCount}`);
@@ -229,8 +228,7 @@ export async function POST(request: Request) {
           model: customModel(modelId),
           system: systemPrompt,
           messages: validMessages,
-          maxSteps: 5, // Allow multiple steps for tool usage
-          // Fix the tools configuration with proper Zod schema
+          maxSteps: 5,
           tools: {
             aiRouter: {
               description:
@@ -270,15 +268,25 @@ export async function POST(request: Request) {
                     aiRouterResult.executionOrder
                   );
 
-                  // Return the comprehensive result back to the model
+                  // CRITICAL FIX: Return the comprehensive analysis as the main response
+                  // This ensures the final response includes all agent data, not just wallet score
+                  const comprehensiveResponse =
+                    aiRouterResult.comprehensiveResponse ||
+                    aiRouterResult.routingDecision?.analysis ||
+                    'Comprehensive analysis completed.';
+
                   return {
                     success: true,
-                    comprehensiveResponse: aiRouterResult.comprehensiveResponse,
+                    // Return the comprehensive analysis as the main response
+                    response: comprehensiveResponse,
+                    // Also include the full results for reference
+                    comprehensiveResponse: comprehensiveResponse,
                     routingDecision: aiRouterResult.routingDecision,
                     agentResults: aiRouterResult.agentResults,
                     executionOrder: aiRouterResult.executionOrder,
                     totalAgentsExecuted: aiRouterResult.totalAgentsExecuted,
-                    uiComponents: aiRouterResult.uiComponents,
+                    uiComponents:
+                      aiRouterResult.agentResults?.uiComponents || [],
                     timestamp: aiRouterResult.timestamp,
                     modelUsed: aiRouterResult.modelUsed,
                   };
@@ -316,18 +324,37 @@ export async function POST(request: Request) {
                               messageIdFromServer: messageId,
                             });
 
-                            // Check if the message contains AI Router results with UI components
+                            // Extract UI components from tool results
                             let metadata = null;
                             if (
-                              message.content &&
-                              typeof message.content === 'string'
+                              (message as any).toolInvocations &&
+                              (message as any).toolInvocations?.length > 0
                             ) {
-                              // Try to extract UI components from tool results if they exist
-                              try {
-                                // This would need to be implemented based on how your sanitizeResponseMessages works
-                                // and how tool results are embedded in the response
-                              } catch (e) {
-                                // Ignore parsing errors
+                              const toolResults = (
+                                message as any
+                              ).toolInvocations
+                                .filter(
+                                  (invocation: { state: string }) =>
+                                    invocation.state === 'result'
+                                )
+                                .map(
+                                  (invocation: { result: any }) =>
+                                    invocation.result
+                                );
+
+                              // Look for UI components in tool results
+                              const uiComponents = toolResults
+                                .filter(
+                                  (result: { uiComponents?: any }) =>
+                                    result && result.uiComponents
+                                )
+                                .flatMap(
+                                  (result: { uiComponents: any[] }) =>
+                                    result.uiComponents
+                                );
+
+                              if (uiComponents.length > 0) {
+                                metadata = { uiComponents };
                               }
                             }
 
@@ -369,17 +396,15 @@ export async function POST(request: Request) {
         });
 
         console.log(`✅ Successfully used model: ${modelId}`);
-        break; // Success! Exit the loop
+        break;
       } catch (error) {
         console.error(`❌ Model ${modelId} failed:`, error);
         lastError = error as Error;
 
-        // If this is the last model to try, we'll throw the error
         if (modelId === modelsToTry[modelsToTry.length - 1]) {
           throw error;
         }
 
-        // Otherwise, continue to the next model
         console.log(`🔄 Trying next fallback model...`);
         continue;
       }
@@ -391,7 +416,6 @@ export async function POST(request: Request) {
 
     console.log('✅ Returning stream response with AI Router integration');
 
-    // Return the stream response - the AI Router results will be part of the stream
     return result.toDataStreamResponse({
       data: streamingData,
     });

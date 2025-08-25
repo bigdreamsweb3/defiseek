@@ -85,8 +85,10 @@ ${JSON.stringify(walletData, null, 2)}
 ${suggestions.length > 0 ? `\nSuggestions for Better Analysis:\n${suggestions.map(s => `- ${s}`).join('\n')}` : ''}
 
 UI COMPONENT DATA AVAILABLE:
-- uiScore: Ready for CheckWalletScoreTool component
-- uiMetrics: Ready for wallet metrics UI components
+${walletData.score ? '- uiScore: Ready for CheckWalletScoreTool component' : '- uiScore: Not available for this query'}
+${walletData.metrics ? '- uiMetrics: Ready for wallet metrics UI components' : '- uiMetrics: Not available for this query'}
+
+IMPORTANT: Only reference data that is actually available in your response. The wallet data above may be partial based on the user's query.
 
 Analyze this wallet based on what the user actually asked for. Provide actionable insights and suggest how they can get better information.
 
