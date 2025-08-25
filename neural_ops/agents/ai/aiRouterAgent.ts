@@ -1,5 +1,5 @@
-// Updated AI Router Agent with better streaming integration
 // File: neural_ops/agents/ai/aiRouterAgent.ts
+// Updated with available agents mapping
 
 import { customModel } from '../../index';
 import { models } from '../../models';
@@ -10,6 +10,14 @@ import {
   createAICoordinatorPrompt,
   AI_COORDINATOR_SYSTEM,
 } from '../../prompts/ai-agents/system-prompts';
+
+// Define available agents
+const AVAILABLE_AGENTS = {
+  walletAnalysisAgent: runWalletAnalysis,
+  // Add more agents here as you implement them
+  // 'marketAnalysisAgent': runMarketAnalysis,
+  // 'protocolAnalysisAgent': runProtocolAnalysis,
+} as const;
 
 export async function runAIRouter(query: string) {
   try {
@@ -22,7 +30,11 @@ export async function runAIRouter(query: string) {
     const routingAnalysis = await generateText({
       model: customModel(model),
       system: AI_ROUTER_SYSTEM_PROMPT,
-      prompt: `Analyze this query and determine the best routing strategy: "${query}"`,
+      prompt: `Available agents: ${Object.keys(AVAILABLE_AGENTS).join(', ')}
+      
+Analyze this query and determine the best routing strategy: "${query}"
+
+Remember: Only use agents from the available list above.`,
       temperature: 0.1,
     });
 
@@ -43,41 +55,57 @@ export async function runAIRouter(query: string) {
     } catch (parseError) {
       console.warn('Failed to parse AI routing decision, using fallback');
       routingDecision = {
-        queryType: 'general_info',
-        requiredAgents: [],
+        queryType: 'wallet_analysis',
+        requiredAgents: ['walletAnalysisAgent'], // Default to available agent for wallet queries
         priority: 'medium',
         confidence: 70,
-        reasoning: 'Fallback routing due to parsing error',
+        reasoning:
+          'Fallback routing due to parsing error - using wallet analysis for wallet-related query',
       };
     }
 
-    console.log(`🎯 Routing Decision:`, routingDecision);
+    // Step 2.5: Filter out unavailable agents
+    const validAgents =
+      routingDecision.requiredAgents?.filter(
+        (agentId: string) => agentId in AVAILABLE_AGENTS
+      ) || [];
 
-    // Step 3: Execute the required agents
+    if (routingDecision.requiredAgents?.length > validAgents.length) {
+      const invalidAgents = routingDecision.requiredAgents.filter(
+        (agentId: string) => !(agentId in AVAILABLE_AGENTS)
+      );
+      console.warn(
+        `⚠️ Filtered out unavailable agents: ${invalidAgents.join(', ')}`
+      );
+    }
+
+    // Update routing decision with valid agents only
+    routingDecision.requiredAgents = validAgents;
+    console.log(`🎯 Final Routing Decision:`, routingDecision);
+
+    // Step 3: Execute the available agents
     const agentResults: any = {};
     const executionOrder: string[] = [];
 
-    for (const agentId of routingDecision.requiredAgents) {
+    for (const agentId of validAgents) {
       try {
         console.log(`🚀 Executing agent: ${agentId}`);
 
-        switch (agentId) {
-          case 'walletAnalysisAgent':
-            agentResults.walletAnalysis = await runWalletAnalysis(query);
-            executionOrder.push('walletAnalysisAgent');
-            break;
-
-          // Add other agents here...
-          default:
-            console.warn(`Unknown agent: ${agentId}`);
-            agentResults[agentId] = {
-              status: 'unknown_agent',
-              message: `Agent ${agentId} not recognized`,
-              timestamp: new Date().toISOString(),
-            };
+        if (agentId in AVAILABLE_AGENTS) {
+          const agentFunction =
+            AVAILABLE_AGENTS[agentId as keyof typeof AVAILABLE_AGENTS];
+          agentResults[agentId] = await agentFunction(query);
+          executionOrder.push(agentId);
+        } else {
+          console.warn(`⚠️ Agent ${agentId} not found in available agents`);
+          agentResults[agentId] = {
+            status: 'unavailable',
+            message: `Agent ${agentId} is not yet implemented`,
+            timestamp: new Date().toISOString(),
+          };
         }
       } catch (error) {
-        console.error(`Error executing agent ${agentId}:`, error);
+        console.error(`❌ Error executing agent ${agentId}:`, error);
         agentResults[agentId] = {
           status: 'error',
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -99,7 +127,7 @@ export async function runAIRouter(query: string) {
       temperature: 0.3,
     });
 
-    // Step 6: Return results optimized for streaming
+    // Step 5: Return results optimized for streaming
     return {
       success: true,
       originalQuery: query,
@@ -112,7 +140,7 @@ export async function runAIRouter(query: string) {
       totalAgentsExecuted: executionOrder.length,
     };
   } catch (err) {
-    console.error('AI Router error:', err);
+    console.error('❌ AI Router error:', err);
     return {
       success: false,
       error: 'AI routing system error',
