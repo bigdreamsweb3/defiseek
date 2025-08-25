@@ -3,6 +3,7 @@ import { models } from '../../models';
 import { generateText } from 'ai';
 import walletScoreAgent from '../bitcrunch/wallet/walletScoreAgent';
 import walletMetricsAgent from '../bitcrunch/wallet/walletMetricsAgent';
+import { erc20TokenAgent } from '../bitcrunch/wallet/erc20TokenAgent';
 
 import {
   AI_ROUTER_SYSTEM_PROMPT,
@@ -25,7 +26,11 @@ export interface AgentResponse {
 }
 
 // Registry of available agents (the sub-agents that do the actual work)
-const AVAILABLE_AGENTS = [walletScoreAgent, walletMetricsAgent];
+const AVAILABLE_AGENTS = [
+  walletScoreAgent,
+  walletMetricsAgent,
+  erc20TokenAgent,
+];
 
 export class WalletAnalysisAgent {
   protected agentName = 'WalletAnalysisAgent';

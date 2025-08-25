@@ -2,6 +2,7 @@
 import { openai } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { deepseek } from '@ai-sdk/deepseek';
+import { groq } from '@ai-sdk/groq'; // 👈 NEW
 import { experimental_wrapLanguageModel as wrapLanguageModel } from 'ai';
 
 import { customMiddleware } from './custom-middleware';
@@ -14,7 +15,7 @@ export const customModel = (apiIdentifier: string) => {
       throw new Error('No model identifier provided');
     }
 
-    // Check for required environment variables
+    // Check required env vars
     const requiredEnvVars: Record<string, string> = {};
 
     if (apiIdentifier.startsWith('gpt-')) {
@@ -24,6 +25,11 @@ export const customModel = (apiIdentifier: string) => {
         process.env.GOOGLE_GENERATIVE_AI_API_KEY || '';
     } else if (apiIdentifier.startsWith('deepseek')) {
       requiredEnvVars.DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
+    } else if (
+      apiIdentifier.startsWith('llama-') ||
+      apiIdentifier.startsWith('mixtral-')
+    ) {
+      requiredEnvVars.GROQ_API_KEY = process.env.GROQ_API_KEY || '';
     }
 
     // Validate API keys
@@ -37,16 +43,11 @@ export const customModel = (apiIdentifier: string) => {
 
     let model;
 
-    // Initialize the appropriate model based on the identifier
+    // Initialize models
     try {
       if (apiIdentifier.startsWith('gpt-')) {
         console.log(`🤖 Initializing OpenAI model: ${apiIdentifier}`);
-        // For @ai-sdk/openai 1.0.0-canary.3, the API key is automatically picked up from process.env.OPENAI_API_KEY
-        // and the model ID must be one of the supported model IDs
-        const modelId = apiIdentifier === 'gpt-3.5-turbo' || apiIdentifier === 'gpt-4' 
-          ? apiIdentifier as 'gpt-3.5-turbo' | 'gpt-4'
-          : 'gpt-3.5-turbo';
-        model = openai(modelId);
+        model = openai(apiIdentifier);
       } else if (apiIdentifier.startsWith('gemini')) {
         console.log(`🤖 Initializing Google model: ${apiIdentifier}`);
         const google = createGoogleGenerativeAI({
@@ -56,6 +57,12 @@ export const customModel = (apiIdentifier: string) => {
       } else if (apiIdentifier.startsWith('deepseek')) {
         console.log(`🤖 Initializing DeepSeek model: ${apiIdentifier}`);
         model = deepseek(apiIdentifier);
+      } else if (
+        apiIdentifier.startsWith('llama-') ||
+        apiIdentifier.startsWith('mixtral-')
+      ) {
+        console.log(`🤖 Initializing Groq model: ${apiIdentifier}`);
+        model = groq(apiIdentifier);
       } else {
         console.warn(`⚠️ Unsupported model: ${apiIdentifier}`);
         throw new Error(`Unsupported model identifier: ${apiIdentifier}`);
@@ -66,24 +73,13 @@ export const customModel = (apiIdentifier: string) => {
       }
 
       console.log(`✅ Model initialized: ${apiIdentifier}`);
-      console.log(`🔍 Model structure:`, {
-        modelId: model.modelId || 'unknown',
-        provider: model.provider || 'unknown',
-        specificationVersion: model.specificationVersion || 'unknown',
-      });
 
-      // Check if middleware exists and is valid
-      let wrappedModel;
-      if (customMiddleware && (customMiddleware.wrapGenerate || customMiddleware.wrapStream)) {
-        console.log(`🔧 Applying custom middleware`);
-        wrappedModel = wrapLanguageModel({
-          model,
-          middleware: customMiddleware,
-        });
-      } else {
-        console.log(`⚠️ No valid middleware found, using model directly`);
-        wrappedModel = model;
-      }
+      // Middleware wrap
+      const wrappedModel =
+        customMiddleware &&
+        (customMiddleware.wrapGenerate || customMiddleware.wrapStream)
+          ? wrapLanguageModel({ model, middleware: customMiddleware })
+          : model;
 
       if (!wrappedModel) {
         throw new Error(`Failed to wrap model: ${apiIdentifier}`);
@@ -96,7 +92,7 @@ export const customModel = (apiIdentifier: string) => {
         `❌ Error initializing model ${apiIdentifier}:`,
         modelError
       );
-      throw modelError; // Re-throw to trigger fallback in route
+      throw modelError;
     }
   } catch (error: unknown) {
     const errorMessage =
@@ -111,5 +107,4 @@ export const customModel = (apiIdentifier: string) => {
   }
 };
 
-// Export all organized prompts
 export * from './prompts';

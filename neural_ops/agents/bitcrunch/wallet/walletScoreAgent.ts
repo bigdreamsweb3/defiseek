@@ -26,7 +26,8 @@ export type WalletScore = z.infer<typeof WalletScoreSchema>;
 
 export const walletScoreAgent = ApiClient.define({
   id: 'walletScoreAgent',
-  description: 'Fetches wallet score data from UnleashNFTs bitsCrunch API',
+  description:
+    'Retrieve a comprehensive overview of a wallets activity and risk assessment, including key metrics such as interaction patterns, classification, and risk scores.',
   output: WalletScoreSchema,
 
   async run(address: string): Promise<WalletScore & { uiComponent?: any }> {
@@ -37,7 +38,9 @@ export const walletScoreAgent = ApiClient.define({
     }
 
     if (!apiKey) {
-      throw new Error('⚠️ UNLEASHNFTS_API_KEY not found in environment variables.');
+      throw new Error(
+        '⚠️ UNLEASHNFTS_API_KEY not found in environment variables.'
+      );
     }
 
     const url = `https://api.unleashnfts.com/api/v2/wallet/score?wallet_address=${address}&time_range=all&offset=0&limit=100`;
@@ -69,25 +72,25 @@ export const walletScoreAgent = ApiClient.define({
       console.log('🧾 Raw wallet score response:', walletScore);
 
       const parsedScore = WalletScoreSchema.parse(walletScore);
-      
+
       // Automatically include UI component data
       const uiComponent = {
         component: 'CheckWalletScoreTool',
         props: {
           result: {
             success: true,
-            data: formatWalletScoreForUI(parsedScore)
+            data: formatWalletScoreForUI(parsedScore),
           },
           toolCallId: `wallet-score-${address}`,
-          args: { address }
-        }
+          args: { address },
+        },
       };
-      
+
       console.log('🎨 WalletScoreAgent returning UI component:', uiComponent);
-      
+
       return {
         ...parsedScore,
-        uiComponent
+        uiComponent,
       };
     } catch (error) {
       console.error('❌ Error in walletScoreAgent:', error);
@@ -98,11 +101,11 @@ export const walletScoreAgent = ApiClient.define({
 
 // Helper function to format wallet score for UI display
 export function formatWalletScoreForUI(walletScore: WalletScore) {
-  const { 
-    classification, 
-    wallet_score, 
-    risk_interaction_score, 
-    anomalous_pattern_score, 
+  const {
+    classification,
+    wallet_score,
+    risk_interaction_score,
+    anomalous_pattern_score,
     smart_contract_interaction_score,
     wallet_age_score,
     volume_score,
@@ -112,9 +115,9 @@ export function formatWalletScoreForUI(walletScore: WalletScore) {
     associated_token_score,
     illicit,
     blockchain_with_illicit,
-    blockchain_without_illicit
+    blockchain_without_illicit,
   } = walletScore;
-  
+
   // Get color classes for UI components
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-red-600';
@@ -137,7 +140,7 @@ export function formatWalletScoreForUI(walletScore: WalletScore) {
     walletScore: wallet_score,
     classification: classification,
     classificationColor: getClassificationColor(wallet_score),
-    
+
     // Risk scores for UI grid
     riskScores: {
       walletAgeScore: wallet_age_score,
@@ -145,25 +148,31 @@ export function formatWalletScoreForUI(walletScore: WalletScore) {
       frequencyScore: frequency_score,
       centralizedInteraction: centralized_interaction_score,
       smartContractInteractionScore: smart_contract_interaction_score,
-      volumeScore: volume_score
+      volumeScore: volume_score,
     },
-    
+
     // Additional data for UI
     blockchainWithoutIllicit: blockchain_without_illicit,
     illicitFlags: illicit,
-    
+
     // Success status for UI
     success: true,
-    
+
     // Raw data for internal use
-    rawData: walletScore
+    rawData: walletScore,
   };
 }
 
 // Helper function to format wallet score for chat display
 export function formatWalletScoreForChat(walletScore: WalletScore) {
-  const { classification, wallet_score, risk_interaction_score, anomalous_pattern_score, smart_contract_interaction_score } = walletScore;
-  
+  const {
+    classification,
+    wallet_score,
+    risk_interaction_score,
+    anomalous_pattern_score,
+    smart_contract_interaction_score,
+  } = walletScore;
+
   // Convert technical scores to user-friendly descriptions
   const getRiskLevel = (score: number) => {
     if (score >= 80) return 'Very High Risk';
@@ -195,33 +204,39 @@ export function formatWalletScoreForChat(walletScore: WalletScore) {
       overallScore: wallet_score,
       classification: classification,
       riskLevel: getRiskLevel(wallet_score),
-      confidence: 'High' // Based on comprehensive data
+      confidence: 'High', // Based on comprehensive data
     },
-    
+
     // Key risk factors in plain language
     riskFactors: {
       interactionRisk: getInteractionRisk(risk_interaction_score),
       anomalyLevel: getAnomalyLevel(anomalous_pattern_score),
-      smartContractRisk: smart_contract_interaction_score < 10 ? '🟢 Low Risk' : '🔶 Moderate Risk'
+      smartContractRisk:
+        smart_contract_interaction_score < 10
+          ? '🟢 Low Risk'
+          : '🔶 Moderate Risk',
     },
-    
+
     // Actionable insights
     insights: {
-      primary: risk_interaction_score > 50 ? 
-        'This wallet has interacted with high-risk entities. Further investigation recommended.' :
-        'This wallet shows normal risk patterns for DeFi usage.',
-      secondary: anomalous_pattern_score > 50 ?
-        'Unusual transaction patterns detected. Monitor for suspicious activity.' :
-        'Transaction patterns appear normal and consistent.',
-      recommendation: wallet_score < 40 ? 
-        'Consider this wallet safe for interactions.' :
-        wallet_score < 60 ? 
-        'Exercise caution and verify before significant transactions.' :
-        'High risk - avoid interactions until further investigation.'
+      primary:
+        risk_interaction_score > 50
+          ? 'This wallet has interacted with high-risk entities. Further investigation recommended.'
+          : 'This wallet shows normal risk patterns for DeFi usage.',
+      secondary:
+        anomalous_pattern_score > 50
+          ? 'Unusual transaction patterns detected. Monitor for suspicious activity.'
+          : 'Transaction patterns appear normal and consistent.',
+      recommendation:
+        wallet_score < 40
+          ? 'Consider this wallet safe for interactions.'
+          : wallet_score < 60
+            ? 'Exercise caution and verify before significant transactions.'
+            : 'High risk - avoid interactions until further investigation.',
     },
-    
+
     // Raw data (for internal use only)
-    rawData: walletScore
+    rawData: walletScore,
   };
 }
 
