@@ -205,13 +205,6 @@ export async function POST(request: Request) {
       return new Response('Invalid model', { status: 400 });
     }
 
-    const userContent =
-      typeof userMessage.content === 'string'
-        ? userMessage.content
-        : JSON.stringify(userMessage.content);
-
-    console.log('🧠 Using AI Router for intelligent query handling');
-
     // Try primary model first, then fallback models
     const modelsToTry = [
       model.apiIdentifier,
@@ -228,77 +221,17 @@ export async function POST(request: Request) {
           model: customModel(modelId),
           system: systemPrompt,
           messages: validMessages,
-          maxSteps: 5,
+          maxSteps: 2,
           tools: {
             aiRouter: {
               description:
-                'Routes complex blockchain/DeFi queries to specialized modular agents and returns comprehensive analysis',
+                'Routes blockchain/DeFi queries to specialized agents and returns analysis',
               parameters: z.object({
-                query: z
-                  .string()
-                  .describe(
-                    "The user's blockchain/DeFi query to analyze and route to appropriate agents"
-                  ),
+                query: z.string().describe("User's blockchain/DeFi query"),
               }),
               execute: async ({ query }: { query: string }) => {
                 console.log('🔧 AI Router tool executing with query:', query);
-
-                try {
-                  // Call your AI Router
-                  const aiRouterResult = await runAIRouter(query);
-
-                  if (aiRouterResult.error) {
-                    console.error('❌ AI Router error:', aiRouterResult.error);
-                    return {
-                      success: false,
-                      error: aiRouterResult.error,
-                      fallbackResponse:
-                        aiRouterResult.fallbackResponse ||
-                        'I encountered an issue analyzing your query. Please try rephrasing your question.',
-                    };
-                  }
-
-                  console.log('✅ AI Router completed successfully');
-                  console.log(
-                    '📊 Agents executed:',
-                    aiRouterResult.totalAgentsExecuted
-                  );
-                  console.log(
-                    '🔄 Execution order:',
-                    aiRouterResult.executionOrder
-                  );
-
-                  // CRITICAL FIX: Return the comprehensive analysis as the main response
-                  // This ensures the final response includes all agent data, not just wallet score
-                  const comprehensiveResponse =
-                    aiRouterResult.comprehensiveResponse ||
-                    aiRouterResult.routingDecision?.analysis ||
-                    'Comprehensive analysis completed.';
-
-                  return {
-                    success: true,
-                    // Return the comprehensive analysis as the main response
-                    response: comprehensiveResponse,
-                    // Also include the full results for reference
-                    comprehensiveResponse: comprehensiveResponse,
-                    routingDecision: aiRouterResult.routingDecision,
-                    agentResults: aiRouterResult.agentResults,
-                    executionOrder: aiRouterResult.executionOrder,
-                    totalAgentsExecuted: aiRouterResult.totalAgentsExecuted,
-                    timestamp: aiRouterResult.timestamp,
-                    modelUsed: aiRouterResult.modelUsed,
-                  };
-                } catch (error) {
-                  console.error('❌ Error in AI Router tool execution:', error);
-                  return {
-                    success: false,
-                    error: 'AI Router execution failed',
-                    details:
-                      error instanceof Error ? error.message : 'Unknown error',
-                    fallbackResponse:
-                      "I'm having trouble processing your request right now. Please try again or rephrase your question.",
-                  };
-                }
+                return await runAIRouter(query);
               },
             },
           },
@@ -311,9 +244,8 @@ export async function POST(request: Request) {
                     sanitizeResponseMessages(responseMessages);
 
                   if (responseMessagesWithoutIncompleteToolCalls.length > 0) {
-                    // Process and save messages with UI components
-                    const processedMessages =
-                      responseMessagesWithoutIncompleteToolCalls.map(
+                    await saveMessages({
+                      messages: responseMessagesWithoutIncompleteToolCalls.map(
                         (message) => {
                           const messageId = generateUUID();
 
@@ -321,55 +253,6 @@ export async function POST(request: Request) {
                             streamingData.appendMessageAnnotation({
                               messageIdFromServer: messageId,
                             });
-
-                            // Extract UI components from tool results
-                            let metadata = null;
-                            if (
-                              (message as any).toolInvocations &&
-                              (message as any).toolInvocations?.length > 0
-                            ) {
-                              const toolResults = (
-                                message as any
-                              ).toolInvocations
-                                .filter(
-                                  (invocation: { state: string }) =>
-                                    invocation.state === 'result'
-                                )
-                                .map(
-                                  (invocation: { result: any }) =>
-                                    invocation.result
-                                );
-                              
-                              // Process tool results to extract UI components and agent data
-                              if (toolResults && toolResults.length > 0) {
-                                const aiRouterResult = toolResults.find(
-                                  (result: any) => 
-                                    result && 
-                                    result.success && 
-                                    (result.routingDecision || result.agentResults)
-                                );
-                                
-                                if (aiRouterResult) {
-                                  metadata = {
-                                    agentData: {
-                                      routingDecision: aiRouterResult.routingDecision,
-                                      agentResults: aiRouterResult.agentResults,
-                                      executionOrder: aiRouterResult.executionOrder,
-                                      totalAgentsExecuted: aiRouterResult.totalAgentsExecuted
-                                    }
-                                  };
-                                }
-                              }
-                            }
-
-                            return {
-                              id: messageId,
-                              chatId: chatId,
-                              role: message.role,
-                              content: message.content,
-                              createdAt: new Date(),
-                              metadata,
-                            };
                           }
 
                           return {
@@ -381,9 +264,8 @@ export async function POST(request: Request) {
                             metadata: null,
                           };
                         }
-                      );
-
-                    await saveMessages({ messages: processedMessages });
+                      ),
+                    });
                   }
                 } catch (error) {
                   console.error('Failed to save chat:', error);
@@ -395,7 +277,7 @@ export async function POST(request: Request) {
           },
           experimental_telemetry: {
             isEnabled: true,
-            functionId: 'stream-text-with-ai-router',
+            functionId: 'stream-text',
           },
         });
 
