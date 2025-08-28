@@ -51,7 +51,8 @@ Our modular agent architecture ensures fast iteration, flexible integrations, an
 ## 🏗️ Tech Stack
 
 - **Frontend**: Next.js + TailwindCSS + Shadcn UI  
-- **Backend**: TypeScript, Neon Postgres (via Drizzle ORM)  
+- **Backend**: TypeScript, Neon Postgres (via Drizzle ORM)
+- **Civic Auth Integration**: Secure, passwordless Web3 login, enabling instant profile creation. [Demo Video]
 - **AI Layer**: Custom LLM Routing + JuliaOS-style Agent Swarms  
 - **APIs**: bitsCrunch API for wallet + NFT safety insights
 
