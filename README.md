@@ -52,7 +52,7 @@ Our modular agent architecture ensures fast iteration, flexible integrations, an
 
 - **Frontend**: Next.js + TailwindCSS + Shadcn UI  
 - **Backend**: TypeScript, Neon Postgres (via Drizzle ORM)
-- **Civic Auth Integration**: Secure, passwordless Web3 login, enabling instant profile creation. [Demo Video]
+- **Civic Auth Integration**: Secure, passwordless Web3 login, enabling instant profile creation. [Demo Video](https://github.com/bigdreamsweb3/defiseek)
 - **AI Layer**: Custom LLM Routing + JuliaOS-style Agent Swarms  
 - **APIs**: bitsCrunch API for wallet + NFT safety insights
 
